@@ -1,45 +1,50 @@
 import tkinter as tk
 
-from array import *
-
 
 class GUI:
+    DEFAULT_START = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # 0 is not a space
+                     [0, 0, 0, 0, 0, 2, 2, 2, 2, 2],  # 1 is black (player 1)
+                     [0, 0, 0, 0, 2, 2, 2, 2, 2, 2],  # 2 is white (player 2)
+                     [0, 0, 0, 3, 3, 2, 2, 2, 3, 3],  # 3 is empty
+                     [0, 0, 3, 3, 3, 3, 3, 3, 3, 3],
+                     [0, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+                     [0, 3, 3, 3, 3, 3, 3, 3, 3, 0],
+                     [0, 3, 3, 1, 1, 1, 3, 3, 0, 0],
+                     [0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+                     [0, 1, 1, 1, 1, 1, 0, 0, 0, 0]]
+
+    BELGIAN_DAISY_START = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # 0 is not a space
+                           [0, 0, 0, 0, 0, 2, 2, 3, 1, 1],  # 1 is black (player 1)
+                           [0, 0, 0, 0, 2, 2, 2, 1, 1, 1],  # 2 is white (player 2)
+                           [0, 0, 0, 3, 2, 2, 3, 1, 1, 3],  # 3 is empty
+                           [0, 0, 3, 3, 3, 3, 3, 3, 3, 3],
+                           [0, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+                           [0, 3, 3, 3, 3, 3, 3, 3, 3, 0],
+                           [0, 3, 1, 1, 3, 2, 2, 3, 0, 0],
+                           [0, 1, 1, 1, 2, 2, 2, 0, 0, 0],
+                           [0, 1, 1, 3, 2, 2, 0, 0, 0, 0]]
+
+    GERMAN_DAISY_START = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # 0 is not a space
+                          [0, 0, 0, 0, 0, 1, 1, 3, 2, 2],  # 1 is black (player 1)
+                          [0, 0, 0, 0, 1, 1, 1, 2, 2, 2],  # 2 is white (player 2)
+                          [0, 0, 0, 3, 1, 1, 3, 2, 2, 3],  # 3 is empty
+                          [0, 0, 3, 3, 3, 3, 3, 3, 3, 3],
+                          [0, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+                          [0, 3, 3, 3, 3, 3, 3, 3, 3, 0],
+                          [0, 3, 2, 2, 3, 1, 1, 3, 0, 0],
+                          [0, 2, 2, 2, 1, 1, 1, 0, 0, 0],
+                          [0, 2, 2, 3, 1, 1, 0, 0, 0, 0]]
+
+    PLAYER_COLOR_DICT = {1: "purple", 2: "yellow", 3: "white"}
+
     def __init__(self):
-        self.node = [[None for row in range(11)] for column in range(11)]
-        default_setup = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  # 0 is not a space
-                         [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0],  # 1 is black (player 1)
-                         [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0],  # 2 is white (player 2)
-                         [0, 0, 0, 3, 3, 1, 1, 1, 3, 3, 0],  # 3 is empty
-                         [0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0],
-                         [0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0],
-                         [0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0],
-                         [0, 3, 3, 2, 2, 2, 3, 3, 0, 0, 0],
-                         [0, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0],
-                         [0, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0],
-                         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
         self.window = tk.Tk()
         self.window.title("Abalone AI")
-        top_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, background="red")
+        top_frame, self.game_score, self.turn_counter = self.setup_top_frame()
         center_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, background="blue")
         bottom_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, background="yellow")
 
-        self.game_score = tk.Label(top_frame, text="Player 1: 0 \t Player 2: 0")
-        self.game_score.grid(row=0, column=0, sticky="n")
-
-        self.turn = tk.Label(top_frame, text="Turn: 1")
-        self.turn.grid(row=0, column=1, sticky="n")
-
-        settings_button = tk.Button(top_frame, text="Settings", command=self.new_game_settings)
-        settings_button.grid(row=0, column=26, sticky="e")
-
-        self.main_game = tk.Frame(center_frame, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, background="green")
-        self.main_game.grid(row=0, column=0)
-
-        for row in range(11):
-            for column in range(11):
-                if default_setup[row][column]:
-                    self.node[row][column] = tk.Button(self.main_game, padx=2, pady=2, text=f"{chr(abs(11-row)+63)}{column}")
-                    self.node[row][column].grid(row=row, column=column*2+row+11, columnspan=2)
+        self.game_board, self.nodes = self.setup_game_board_and_nodes(center_frame, self.BELGIAN_DAISY_START)
 
         self.move_history = tk.Frame(center_frame, relief=tk.RAISED, borderwidth=1, background="orange")
         self.move_history_p1 = tk.Label(self.move_history, text="Player 1")
@@ -79,6 +84,38 @@ class GUI:
         top_frame.grid(row=0, sticky="ew")
         center_frame.grid(row=1, sticky="nsew")
         bottom_frame.grid(row=3, sticky="ew")
+
+    def setup_top_frame(self):
+        top_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, background="red")
+        game_score = tk.Label(top_frame, text="Player 1: 0 \t Player 2: 0")
+        game_score.grid(row=0, column=0, sticky="n")
+
+        turn_counter = tk.Label(top_frame, text="turn_counter: 1")
+        turn_counter.grid(row=0, column=1, sticky="n")
+
+        settings_button = tk.Button(top_frame, text="Settings", command=self.new_game_settings)
+        settings_button.grid(row=0, column=3, sticky="e")
+
+        return top_frame, game_score, turn_counter
+
+    def setup_game_board_and_nodes(self, center_frame, starting_setup=None):
+        if starting_setup is None:
+            starting_setup = self.DEFAULT_START
+        game_board = tk.Frame(center_frame, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, background="green")
+        game_board.grid(row=0, column=0)
+
+        arr_len = len(starting_setup)
+        node = [[None for row in range(arr_len)] for column in range(arr_len)]
+        for row in range(arr_len):
+            for column in range(arr_len):
+                node_val = starting_setup[row][column]
+                if node_val:
+                    node[row][column] = tk.Button(game_board, padx=2, pady=2,
+                                                  text=f"{chr(abs(arr_len - row) + 64)}{column}",
+                                                  background=self.PLAYER_COLOR_DICT[node_val])
+                    node[row][column].grid(row=row, column=column * 2 + row + arr_len, columnspan=2)
+
+        return game_board, node
 
     def new_game_settings(self):
         settings_window = tk.Toplevel(self.window)
