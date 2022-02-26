@@ -47,7 +47,7 @@ class GUI:
         self.window = tk.Tk()
         self.window.title("Abalone AI")
 
-        # Top frame: Player Score, Turn Counter
+        # Top frame: Player Score, Turn Counter, Settings button
         self.game_score, self.turn_counter = self.setup_top_frame()
 
         # Center frame: Game Board, Moves History
@@ -150,38 +150,59 @@ class GUI:
         undo_btn = tk.Button(bottom_frame, text="Undo", padx=btn_pad_x, pady=btn_pad_y)
         undo_btn.grid(row=0, column=4)
 
-    def new_game_settings(self):
+    def new_game_settings(self):  # might have to mess with `self.` to get values to be returned.
         settings_window = tk.Toplevel(self.window)
 
-        toggle_layout = tk.Button(settings_window, text="*")
-        toggle_layout.grid(row=0, column=0)
-        toggle_layout_label = tk.Label(settings_window, text="Default")
-        toggle_layout_label.grid(row=0, column=1)
+        pad = 5
 
-        toggle_colour = tk.Button(settings_window, text="*")
-        toggle_colour.grid(row=1, column=0)
-        toggle_colour_label = tk.Label(settings_window, text="Player 1 = black, Player 2 = white")
-        toggle_colour_label.grid(row=1, column=1)
+        layout_frame = tk.Frame(settings_window, relief=tk.RAISED, borderwidth=1, padx=pad, pady=pad)
+        self.layout_var = tk.IntVar()
+        layout_radio_default = tk.Radiobutton(layout_frame, text="Default", variable=self.layout_var, value=1)
+        layout_radio_default.grid(row=0, column=0, sticky="w")
+        layout_radio_belgian_daisy = tk.Radiobutton(layout_frame, text="Belgian Daisy", variable=self.layout_var, value=2)
+        layout_radio_belgian_daisy.grid(row=1, column=0, sticky="w")
+        layout_radio_german_daisy = tk.Radiobutton(layout_frame, text="German Daisy", variable=self.layout_var, value=3)
+        layout_radio_german_daisy.grid(row=2, column=0, sticky="w")
+        layout_radio_default.select()
+        layout_frame.grid(row=0, column=0, sticky="ew")
 
-        toggle_gamemode = tk.Button(settings_window, text="*")
-        toggle_gamemode.grid(row=2, column=0)
-        toggle_gamemode_label = tk.Label(settings_window, text="Human vs Human")
-        toggle_gamemode_label.grid(row=2, column=1)
+        colour_frame = tk.Frame(settings_window, relief=tk.RAISED, borderwidth=1, padx=pad, pady=pad)
+        self.colour_var = tk.IntVar()
+        colour_radio1 = tk.Radiobutton(colour_frame, text="P1 = black, P2 = white", variable=self.colour_var, value=1)
+        colour_radio1.grid(row=0, column=0, sticky="w")
+        colour_radio2 = tk.Radiobutton(colour_frame, text="P1 = white, P2 = black", variable=self.colour_var, value=2)
+        colour_radio2.grid(row=1, column=0, sticky="w")
+        colour_radio1.select()
+        colour_frame.grid(row=1, column=0, sticky="ew")
 
-        move_limit = tk.Entry(settings_window, width=10)
-        move_limit.grid(row=3, column=0)
-        move_limit_label = tk.Label(settings_window, text="Move limit")
-        move_limit_label.grid(row=3, column=1)
+        gamemode_frame = tk.Frame(settings_window, relief=tk.RAISED, borderwidth=1, padx=pad, pady=pad)
+        self.gamemode_var = tk.IntVar()
+        gamemode_radio_human_ai = tk.Radiobutton(gamemode_frame, text="Human vs AI", variable=self.gamemode_var, value=1)
+        gamemode_radio_human_ai.grid(row=0, column=0, sticky="w")
+        gamemode_radio_human_human = tk.Radiobutton(gamemode_frame, text="Human vs Human", variable=self.gamemode_var, value=2)
+        gamemode_radio_human_human.grid(row=1, column=0, sticky="w")
+        gamemode_radio_ai_ai = tk.Radiobutton(gamemode_frame, text="AI vs AI", variable=self.gamemode_var, value=3)
+        gamemode_radio_ai_ai.grid(row=2, column=0, sticky="w")
+        gamemode_frame.grid(row=2, column=0, sticky="ew")
 
-        time_limit_p1 = tk.Entry(settings_window, width=10)
-        time_limit_p1.grid(row=4, column=0)
-        time_limit_p1_label = tk.Label(settings_window, text="Player 1 time limit")
-        time_limit_p1_label.grid(row=4, column=1)
+        move_limit_frame = tk.Frame(settings_window, relief=tk.RAISED, borderwidth=1, padx=pad, pady=pad)
+        move_limit_entry = tk.Entry(move_limit_frame, width=3)
+        move_limit_entry.grid(row=0, column=0)
+        move_limit_label = tk.Label(move_limit_frame, text="Move limit")
+        move_limit_label.grid(row=0, column=1)
+        move_limit_frame.grid(row=3, column=0, sticky="ew")
 
-        time_limit_p2 = tk.Entry(settings_window, width=10)
-        time_limit_p2.grid(row=5, column=0)
-        time_limit_p2_label = tk.Label(settings_window, text="Player 2 time limit")
-        time_limit_p2_label.grid(row=5, column=1)
+        time_limit_frame = tk.Frame(settings_window, relief=tk.RAISED, borderwidth=1, padx=pad, pady=pad)
+        time_limit_p1 = tk.Entry(time_limit_frame, width=3)
+        time_limit_p1.grid(row=0, column=0)
+        time_limit_p1_label = tk.Label(time_limit_frame, text="P1 time limit per move (s)")
+        time_limit_p1_label.grid(row=0, column=1)
+
+        time_limit_p2 = tk.Entry(time_limit_frame, width=3)
+        time_limit_p2.grid(row=1, column=0)
+        time_limit_p2_label = tk.Label(time_limit_frame, text="P2 time limit per move (s)")
+        time_limit_p2_label.grid(row=1, column=1)
+        time_limit_frame.grid(row=4, column=0, sticky="ew")
 
     def run_gui(self):
         self.window.mainloop()
