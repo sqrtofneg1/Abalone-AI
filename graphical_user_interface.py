@@ -59,9 +59,10 @@ class GUI:
         self.center_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="#7F694C")
         self.center_frame.grid(row=1, sticky="nsew")
 
-        self.setup_bottom_frame()
-
-        self.setup_directional_arrows()
+        options_frame = tk.Frame(self.center_frame, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="#d5a976")
+        options_frame.grid(row=0, column=1, sticky="ns")
+        self.setup_directional_arrows(options_frame)
+        self.setup_options_frame(options_frame)
 
         self.reset_game()
 
@@ -146,25 +147,24 @@ class GUI:
         return history_p1_move, history_p1_time, history_p2_move, \
             history_p2_time, history_p1_total_time, history_p2_total_time
 
-    def setup_bottom_frame(self):
-        bottom_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="tan")
-        bottom_frame.grid(row=3, sticky="ew")
+    def setup_options_frame(self, frame):
         btn_pad_x = 25
         btn_pad_y = 5
-        start_btn = tk.Button(bottom_frame, text="Start", padx=btn_pad_x, pady=btn_pad_y)
-        start_btn.grid(row=0, column=0)
-        pause_btn = tk.Button(bottom_frame, text="Pause", padx=btn_pad_x, pady=btn_pad_y)
-        pause_btn.grid(row=0, column=1)
-        stop_btn = tk.Button(bottom_frame, text="Stop", padx=btn_pad_x, pady=btn_pad_y)
-        stop_btn.grid(row=0, column=2)
-        reset_btn = tk.Button(bottom_frame, text="Reset", padx=btn_pad_x, pady=btn_pad_y)
-        reset_btn.grid(row=0, column=3)
-        undo_btn = tk.Button(bottom_frame, text="Undo", padx=btn_pad_x, pady=btn_pad_y)
-        undo_btn.grid(row=0, column=4)
+        pad_y = 10
+        self.start_btn = tk.Button(frame, text="Start", padx=btn_pad_x, pady=btn_pad_y)
+        self.start_btn.grid(row=1, column=0, pady=pad_y)
+        self.pause_btn = tk.Button(frame, text="Pause", padx=btn_pad_x, pady=btn_pad_y)
+        self.pause_btn.grid(row=2, column=0, pady=pad_y)
+        self.stop_btn = tk.Button(frame, text="Stop", padx=btn_pad_x, pady=btn_pad_y)
+        self.stop_btn.grid(row=3, column=0, pady=pad_y)
+        self.reset_btn = tk.Button(frame, text="Reset", padx=btn_pad_x, pady=btn_pad_y)
+        self.reset_btn.grid(row=4, column=0, pady=pad_y)
+        self.undo_btn = tk.Button(frame, text="Undo", padx=btn_pad_x, pady=btn_pad_y)
+        self.undo_btn.grid(row=5, column=0, pady=pad_y)
 
-    def setup_directional_arrows(self):
-        arrows_frame = tk.Frame(self.center_frame, relief=tk.RAISED, borderwidth=1)
-        arrows_frame.grid(row=0, column=1, sticky="n")
+    def setup_directional_arrows(self, frame):
+        arrows_frame = tk.Frame(frame, relief=tk.RAISED, borderwidth=1)
+        arrows_frame.grid(row=0, column=0, sticky="n", pady=10)
 
         self.top_left_arrow = tk.Button(arrows_frame, text=" 🡔 ")
         self.top_left_arrow.configure(font=("Consolas", 20))
