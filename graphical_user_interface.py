@@ -9,38 +9,41 @@ class GUI:
     - 2 is white (player 2)
     - 3 is empty
     """
-    DEFAULT_START = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 2, 2, 2, 2, 2],
-                     [0, 0, 0, 0, 2, 2, 2, 2, 2, 2],
-                     [0, 0, 0, 3, 3, 2, 2, 2, 3, 3],
-                     [0, 0, 3, 3, 3, 3, 3, 3, 3, 3],
-                     [0, 3, 3, 3, 3, 3, 3, 3, 3, 3],
-                     [0, 3, 3, 3, 3, 3, 3, 3, 3, 0],
-                     [0, 3, 3, 1, 1, 1, 3, 3, 0, 0],
-                     [0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
-                     [0, 1, 1, 1, 1, 1, 0, 0, 0, 0]]
+    DEFAULT_START = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 0],
+                     [0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0],
+                     [0, 0, 0, 3, 3, 2, 2, 2, 3, 3, 0],
+                     [0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0],
+                     [0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0],
+                     [0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0],
+                     [0, 3, 3, 1, 1, 1, 3, 3, 0, 0, 0],
+                     [0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+                     [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
+                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
-    BELGIAN_DAISY_START = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 2, 2, 3, 1, 1],
-                           [0, 0, 0, 0, 2, 2, 2, 1, 1, 1],
-                           [0, 0, 0, 3, 2, 2, 3, 1, 1, 3],
-                           [0, 0, 3, 3, 3, 3, 3, 3, 3, 3],
-                           [0, 3, 3, 3, 3, 3, 3, 3, 3, 3],
-                           [0, 3, 3, 3, 3, 3, 3, 3, 3, 0],
-                           [0, 3, 1, 1, 3, 2, 2, 3, 0, 0],
-                           [0, 1, 1, 1, 2, 2, 2, 0, 0, 0],
-                           [0, 1, 1, 3, 2, 2, 0, 0, 0, 0]]
+    BELGIAN_DAISY_START = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 2, 2, 3, 1, 1, 0],
+                           [0, 0, 0, 0, 2, 2, 2, 1, 1, 1, 0],
+                           [0, 0, 0, 3, 2, 2, 3, 1, 1, 3, 0],
+                           [0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0],
+                           [0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0],
+                           [0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0],
+                           [0, 3, 1, 1, 3, 2, 2, 3, 0, 0, 0],
+                           [0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 0],
+                           [0, 1, 1, 3, 2, 2, 0, 0, 0, 0, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
-    GERMAN_DAISY_START = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [0, 0, 0, 0, 0, 1, 1, 3, 2, 2],
-                          [0, 0, 0, 0, 1, 1, 1, 2, 2, 2],
-                          [0, 0, 0, 3, 1, 1, 3, 2, 2, 3],
-                          [0, 0, 3, 3, 3, 3, 3, 3, 3, 3],
-                          [0, 3, 3, 3, 3, 3, 3, 3, 3, 3],
-                          [0, 3, 3, 3, 3, 3, 3, 3, 3, 0],
-                          [0, 3, 2, 2, 3, 1, 1, 3, 0, 0],
-                          [0, 2, 2, 2, 1, 1, 1, 0, 0, 0],
-                          [0, 2, 2, 3, 1, 1, 0, 0, 0, 0]]
+    GERMAN_DAISY_START = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [0, 0, 0, 0, 0, 1, 1, 3, 2, 2, 0],
+                          [0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0],
+                          [0, 0, 0, 3, 1, 1, 3, 2, 2, 3, 0],
+                          [0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0],
+                          [0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0],
+                          [0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0],
+                          [0, 3, 2, 2, 3, 1, 1, 3, 0, 0, 0],
+                          [0, 2, 2, 2, 1, 1, 1, 0, 0, 0, 0],
+                          [0, 2, 2, 3, 1, 1, 0, 0, 0, 0, 0],
+                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
     STARTING_LAYOUT = {1: DEFAULT_START, 2: BELGIAN_DAISY_START, 3: GERMAN_DAISY_START}
 
@@ -55,6 +58,10 @@ class GUI:
         # Center frame: Game Board, Moves History
         self.center_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="#7F694C")
         self.center_frame.grid(row=1, sticky="nsew")
+
+        self.setup_bottom_frame()
+
+        self.setup_directional_arrows()
 
         self.reset_game()
 
@@ -97,7 +104,7 @@ class GUI:
     def setup_moves_history(frame):
         pad_y = 5
         history_frame = tk.Frame(frame, relief=tk.RAISED, borderwidth=1, bg="brown")
-        history_frame.grid(row=0, column=1, sticky="ns")
+        history_frame.grid(row=0, column=2, sticky="ns")
 
         history_p1 = tk.Label(history_frame, text="Player 1", pady=pad_y, bg="brown", fg="white")
         history_p1.grid(row=0, column=0, columnspan=2)
@@ -105,27 +112,37 @@ class GUI:
         history_p2.grid(row=0, column=2, columnspan=2)
 
         hist_h = 30
-        hist_w = 35, 15
+        hist_w = 30, 15
+
+        history_p1_move_label = tk.Label(history_frame, text="Move:", pady=pad_y, bg="brown",
+                                         fg="white")
+        history_p1_move_label.grid(row=1, column=0, sticky="w")
+        history_p1_time_label = tk.Label(history_frame, text="Time:", pady=pad_y, bg="brown",
+                                         fg="white")
+        history_p1_time_label.grid(row=1, column=1, sticky="w")
+        history_p2_move_label = tk.Label(history_frame, text="Move:", pady=pad_y, bg="brown",
+                                         fg="white")
+        history_p2_move_label.grid(row=1, column=2, sticky="w")
+        history_p2_time_label = tk.Label(history_frame, text="Time:", pady=pad_y, bg="brown",
+                                         fg="white")
+        history_p2_time_label.grid(row=1, column=3, sticky="w")
+
         history_p1_move = tk.Listbox(history_frame, borderwidth=1, height=hist_h, width=hist_w[0])
-        history_p1_move.insert(0, "Move:")
-        history_p1_move.grid(row=1, column=0)
+        history_p1_move.grid(row=2, column=0)
         history_p1_time = tk.Listbox(history_frame, borderwidth=1, height=hist_h, width=hist_w[1])
-        history_p1_time.insert(0, "Time:")
-        history_p1_time.grid(row=1, column=1)
+        history_p1_time.grid(row=2, column=1)
 
         history_p2_move = tk.Listbox(history_frame, borderwidth=1, height=hist_h, width=hist_w[0])
-        history_p2_move.insert(0, "Move:")
-        history_p2_move.grid(row=1, column=2)
+        history_p2_move.grid(row=2, column=2)
         history_p2_time = tk.Listbox(history_frame, borderwidth=1, height=hist_h, width=hist_w[1])
-        history_p2_time.insert(0, "Time:")
-        history_p2_time.grid(row=1, column=3)
+        history_p2_time.grid(row=2, column=3)
 
         history_p1_total_time = tk.Label(history_frame, text="Total time: 0:00", pady=pad_y, bg="brown",
                                          fg="white")
-        history_p1_total_time.grid(row=2, column=1)
+        history_p1_total_time.grid(row=3, column=1)
         history_p2_total_time = tk.Label(history_frame, text="Total time: 0:00", pady=pad_y, bg="brown",
                                          fg="white")
-        history_p2_total_time.grid(row=2, column=3)
+        history_p2_total_time.grid(row=3, column=3)
         return history_p1_move, history_p1_time, history_p2_move, \
             history_p2_time, history_p1_total_time, history_p2_total_time
 
@@ -144,6 +161,34 @@ class GUI:
         reset_btn.grid(row=0, column=3)
         undo_btn = tk.Button(bottom_frame, text="Undo", padx=btn_pad_x, pady=btn_pad_y)
         undo_btn.grid(row=0, column=4)
+
+    def setup_directional_arrows(self):
+        arrows_frame = tk.Frame(self.center_frame, relief=tk.RAISED, borderwidth=1)
+        arrows_frame.grid(row=0, column=1, sticky="n")
+
+        self.top_left_arrow = tk.Button(arrows_frame, text=" 🡔 ")
+        self.top_left_arrow.configure(font=("Consolas", 20))
+        self.top_left_arrow.grid(row=0, column=1, columnspan=2)
+
+        self.top_right_arrow = tk.Button(arrows_frame, text=" 🡕 ")
+        self.top_right_arrow.configure(font=("Consolas", 20))
+        self.top_right_arrow.grid(row=0, column=3, columnspan=2)
+
+        self.left_arrow = tk.Button(arrows_frame, text="🡐")
+        self.left_arrow.configure(font=("Consolas", 20))
+        self.left_arrow.grid(row=1, column=0, columnspan=2)
+
+        self.right_arrow = tk.Button(arrows_frame, text="🡒")
+        self.right_arrow.configure(font=("Consolas", 20))
+        self.right_arrow.grid(row=1, column=4, columnspan=2)
+
+        self.bottom_left_arrow = tk.Button(arrows_frame, text=" 🡗 ")
+        self.bottom_left_arrow.configure(font=("Consolas", 20))
+        self.bottom_left_arrow.grid(row=2, column=1, columnspan=2)
+
+        self.bottom_right_arrow = tk.Button(arrows_frame, text=" 🡖 ")
+        self.bottom_right_arrow.configure(font=("Consolas", 20))
+        self.bottom_right_arrow.grid(row=2, column=3, columnspan=2)
 
     def new_game_settings(self):  # might have to mess with `self.` to get values to be returned.
         self.settings_window = tk.Toplevel(self.window)
