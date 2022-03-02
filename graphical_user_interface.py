@@ -1,4 +1,5 @@
 import tkinter as tk
+from settings import *
 
 
 class GUI:
@@ -41,27 +42,21 @@ class GUI:
                           [0, 2, 2, 2, 1, 1, 1, 0, 0, 0],
                           [0, 2, 2, 3, 1, 1, 0, 0, 0, 0]]
 
+    STARTING_LAYOUT = {1: DEFAULT_START, 2: BELGIAN_DAISY_START, 3: GERMAN_DAISY_START}
+
     PLAYER_COLOR_DICT = {1: "black", 2: "white", 3: "grey"}
 
-    def __init__(self):
+    def __init__(self, settings=Settings.default_settings()):
         self.window = tk.Tk()
         self.window.title("Abalone AI")
 
-        # Top frame: Player Score, Turn Counter, Settings button
-        self.game_score, self.turn_counter = self.setup_top_frame()
+        self.settings = settings
 
         # Center frame: Game Board, Moves History
-        center_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="#7F694C")
-        center_frame.grid(row=1, sticky="nsew")
-        # Game Board
-        self.game_board, self.nodes = self.setup_game_board_and_nodes(center_frame, self.BELGIAN_DAISY_START)
-        # Moves History
-        self.history_p1_move, self.history_p1_time, \
-            self.history_p2_move, self.history_p2_time, \
-            self.history_p1_total_time, self.history_p2_total_time = self.setup_moves_history(center_frame)
+        self.center_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="#7F694C")
+        self.center_frame.grid(row=1, sticky="nsew")
 
-        # Bottom frame: Start, Pause, Stop, Reset, Undo buttons
-        self.setup_bottom_frame()
+        self.reset_game()
 
     def setup_top_frame(self):
         top_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="tan")
@@ -151,58 +146,92 @@ class GUI:
         undo_btn.grid(row=0, column=4)
 
     def new_game_settings(self):  # might have to mess with `self.` to get values to be returned.
-        settings_window = tk.Toplevel(self.window)
+        self.settings_window = tk.Toplevel(self.window)
 
         pad = 5
 
-        layout_frame = tk.Frame(settings_window, relief=tk.RAISED, borderwidth=1, padx=pad, pady=pad)
+        layout_frame = tk.Frame(self.settings_window, relief=tk.GROOVE, borderwidth=1, padx=pad, pady=pad)
         self.layout_var = tk.IntVar()
-        layout_radio_default = tk.Radiobutton(layout_frame, text="Default", variable=self.layout_var, value=1)
+        layout_radio_default = tk.Radiobutton(layout_frame, text="Default", variable=self.layout_var,
+                                              value=Layout.DEFAULT.value)
         layout_radio_default.grid(row=0, column=0, sticky="w")
-        layout_radio_belgian_daisy = tk.Radiobutton(layout_frame, text="Belgian Daisy", variable=self.layout_var, value=2)
+        layout_radio_belgian_daisy = tk.Radiobutton(layout_frame, text="Belgian Daisy", variable=self.layout_var,
+                                                    value=Layout.BELGIAN_DAISY.value)
         layout_radio_belgian_daisy.grid(row=1, column=0, sticky="w")
-        layout_radio_german_daisy = tk.Radiobutton(layout_frame, text="German Daisy", variable=self.layout_var, value=3)
+        layout_radio_german_daisy = tk.Radiobutton(layout_frame, text="German Daisy", variable=self.layout_var,
+                                                   value=Layout.GERMAN_DAISY.value)
         layout_radio_german_daisy.grid(row=2, column=0, sticky="w")
         layout_radio_default.select()
         layout_frame.grid(row=0, column=0, sticky="ew")
 
-        colour_frame = tk.Frame(settings_window, relief=tk.RAISED, borderwidth=1, padx=pad, pady=pad)
+        colour_frame = tk.Frame(self.settings_window, relief=tk.GROOVE, borderwidth=1, padx=pad, pady=pad)
         self.colour_var = tk.IntVar()
-        colour_radio1 = tk.Radiobutton(colour_frame, text="P1 = black, P2 = white", variable=self.colour_var, value=1)
+        colour_radio1 = tk.Radiobutton(colour_frame, text="P1 = black, P2 = white", variable=self.colour_var,
+                                       value=Colour.BLACK.value)
         colour_radio1.grid(row=0, column=0, sticky="w")
-        colour_radio2 = tk.Radiobutton(colour_frame, text="P1 = white, P2 = black", variable=self.colour_var, value=2)
+        colour_radio2 = tk.Radiobutton(colour_frame, text="P1 = white, P2 = black", variable=self.colour_var,
+                                       value=Colour.WHITE.value)
         colour_radio2.grid(row=1, column=0, sticky="w")
         colour_radio1.select()
         colour_frame.grid(row=1, column=0, sticky="ew")
 
-        gamemode_frame = tk.Frame(settings_window, relief=tk.RAISED, borderwidth=1, padx=pad, pady=pad)
+        gamemode_frame = tk.Frame(self.settings_window, relief=tk.GROOVE, borderwidth=1, padx=pad, pady=pad)
         self.gamemode_var = tk.IntVar()
-        gamemode_radio_human_ai = tk.Radiobutton(gamemode_frame, text="Human vs AI", variable=self.gamemode_var, value=1)
+        gamemode_radio_human_ai = tk.Radiobutton(gamemode_frame, text="Human vs AI", variable=self.gamemode_var,
+                                                 value=Gamemode.HUMAN_HUMAN.value)
         gamemode_radio_human_ai.grid(row=0, column=0, sticky="w")
-        gamemode_radio_human_human = tk.Radiobutton(gamemode_frame, text="Human vs Human", variable=self.gamemode_var, value=2)
+        gamemode_radio_human_ai.select()
+        gamemode_radio_human_human = tk.Radiobutton(gamemode_frame, text="Human vs Human", variable=self.gamemode_var,
+                                                    value=Gamemode.HUMAN_AI.value)
         gamemode_radio_human_human.grid(row=1, column=0, sticky="w")
-        gamemode_radio_ai_ai = tk.Radiobutton(gamemode_frame, text="AI vs AI", variable=self.gamemode_var, value=3)
+        gamemode_radio_ai_ai = tk.Radiobutton(gamemode_frame, text="AI vs AI", variable=self.gamemode_var,
+                                              value=Gamemode.AI_AI.value)
         gamemode_radio_ai_ai.grid(row=2, column=0, sticky="w")
         gamemode_frame.grid(row=2, column=0, sticky="ew")
 
-        move_limit_frame = tk.Frame(settings_window, relief=tk.RAISED, borderwidth=1, padx=pad, pady=pad)
-        move_limit_entry = tk.Entry(move_limit_frame, width=3)
+        move_limit_frame = tk.Frame(self.settings_window, relief=tk.GROOVE, borderwidth=1, padx=pad, pady=pad)
+        self.move_limit_var = tk.IntVar()
+        move_limit_entry = tk.Entry(move_limit_frame, width=3, textvariable=self.move_limit_var)
         move_limit_entry.grid(row=0, column=0)
         move_limit_label = tk.Label(move_limit_frame, text="Move limit")
         move_limit_label.grid(row=0, column=1)
         move_limit_frame.grid(row=3, column=0, sticky="ew")
 
-        time_limit_frame = tk.Frame(settings_window, relief=tk.RAISED, borderwidth=1, padx=pad, pady=pad)
-        time_limit_p1 = tk.Entry(time_limit_frame, width=3)
+        time_limit_frame = tk.Frame(self.settings_window, relief=tk.GROOVE, borderwidth=1, padx=pad, pady=pad)
+        self.time_limit_p1_var = tk.IntVar()
+        time_limit_p1 = tk.Entry(time_limit_frame, width=3, textvariable=self.time_limit_p1_var)
         time_limit_p1.grid(row=0, column=0)
         time_limit_p1_label = tk.Label(time_limit_frame, text="P1 time limit per move (s)")
         time_limit_p1_label.grid(row=0, column=1)
 
-        time_limit_p2 = tk.Entry(time_limit_frame, width=3)
+        self.time_limit_p2_var = tk.IntVar()
+        time_limit_p2 = tk.Entry(time_limit_frame, width=3, textvariable=self.time_limit_p2_var)
         time_limit_p2.grid(row=1, column=0)
         time_limit_p2_label = tk.Label(time_limit_frame, text="P2 time limit per move (s)")
         time_limit_p2_label.grid(row=1, column=1)
         time_limit_frame.grid(row=4, column=0, sticky="ew")
+
+        ok_button = tk.Button(self.settings_window, relief=tk.RAISED, borderwidth=5, padx=pad, pady=pad,
+                              text="Create new game with these settings!", command=self.set_and_get_settings)
+        ok_button.grid(row=5, column=0, sticky="ew")
+
+    def set_and_get_settings(self):
+        self.settings = Settings(self.layout_var.get(), self.colour_var.get(), self.gamemode_var.get(),
+                                 self.move_limit_var.get(), self.time_limit_p1_var.get(), self.time_limit_p2_var.get())
+        self.settings_window.destroy()
+        self.reset_game()
+
+    def reset_game(self):
+        # Top frame: Player Score, Turn Counter, Settings button
+        self.game_score, self.turn_counter = self.setup_top_frame()
+
+        # Game Board
+        self.game_board, self.nodes = self.setup_game_board_and_nodes(self.center_frame,
+                                                                      self.STARTING_LAYOUT[self.settings.layout])
+        # Moves History
+        self.history_p1_move, self.history_p1_time, \
+            self.history_p2_move, self.history_p2_time, \
+            self.history_p1_total_time, self.history_p2_total_time = self.setup_moves_history(self.center_frame)
 
     def run_gui(self):
         self.window.mainloop()
