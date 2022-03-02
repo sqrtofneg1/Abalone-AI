@@ -14,6 +14,7 @@ class Settings:
     def default_settings():
         return Settings(1, 1, 1, 0, 0, 0)
 
+
 class Layout(Enum):
     DEFAULT = auto()
     BELGIAN_DAISY = auto()
