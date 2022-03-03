@@ -53,6 +53,13 @@ class GUI:
         self.window = tk.Tk()
         self.window.title("Abalone AI")
 
+        self.settings_window = None
+        self.layout_var = None
+        self.colour_var = None
+        self.gamemode_var = None
+        self.move_limit_var = None
+        self.time_limit_p1_var = None
+        self.time_limit_p2_var = None
         self.settings = settings
 
         # Center frame: Game Board, Moves History
@@ -64,6 +71,16 @@ class GUI:
         self.setup_directional_arrows(options_frame)
         self.setup_options_frame(options_frame)
 
+        self.game_score = None
+        self.turn_counter = None
+        self.game_board = None
+        self.nodes = None
+        self.history_p1_time = None
+        self.history_p1_move = None
+        self.history_p1_total_time = None
+        self.history_p2_time = None
+        self.history_p2_move = None
+        self.history_p2_total_time = None
         self.reset_game()
 
     def setup_top_frame(self):
@@ -145,50 +162,52 @@ class GUI:
                                          fg="white")
         history_p2_total_time.grid(row=3, column=3)
         return history_p1_move, history_p1_time, history_p2_move, \
-            history_p2_time, history_p1_total_time, history_p2_total_time
+               history_p2_time, history_p1_total_time, history_p2_total_time
 
-    def setup_options_frame(self, frame):
+    @staticmethod
+    def setup_options_frame(frame):
         btn_pad_x = 25
         btn_pad_y = 5
         pad_y = 10
-        self.start_btn = tk.Button(frame, text="Start", padx=btn_pad_x, pady=btn_pad_y)
-        self.start_btn.grid(row=1, column=0, pady=pad_y)
-        self.pause_btn = tk.Button(frame, text="Pause", padx=btn_pad_x, pady=btn_pad_y)
-        self.pause_btn.grid(row=2, column=0, pady=pad_y)
-        self.stop_btn = tk.Button(frame, text="Stop", padx=btn_pad_x, pady=btn_pad_y)
-        self.stop_btn.grid(row=3, column=0, pady=pad_y)
-        self.reset_btn = tk.Button(frame, text="Reset", padx=btn_pad_x, pady=btn_pad_y)
-        self.reset_btn.grid(row=4, column=0, pady=pad_y)
-        self.undo_btn = tk.Button(frame, text="Undo", padx=btn_pad_x, pady=btn_pad_y)
-        self.undo_btn.grid(row=5, column=0, pady=pad_y)
+        start_btn = tk.Button(frame, text="Start", padx=btn_pad_x, pady=btn_pad_y)
+        start_btn.grid(row=1, column=0, pady=pad_y)
+        pause_btn = tk.Button(frame, text="Pause", padx=btn_pad_x, pady=btn_pad_y)
+        pause_btn.grid(row=2, column=0, pady=pad_y)
+        stop_btn = tk.Button(frame, text="Stop", padx=btn_pad_x, pady=btn_pad_y)
+        stop_btn.grid(row=3, column=0, pady=pad_y)
+        reset_btn = tk.Button(frame, text="Reset", padx=btn_pad_x, pady=btn_pad_y)
+        reset_btn.grid(row=4, column=0, pady=pad_y)
+        undo_btn = tk.Button(frame, text="Undo", padx=btn_pad_x, pady=btn_pad_y)
+        undo_btn.grid(row=5, column=0, pady=pad_y)
 
-    def setup_directional_arrows(self, frame):
+    @staticmethod
+    def setup_directional_arrows(frame):
         arrows_frame = tk.Frame(frame, relief=tk.RAISED, borderwidth=1)
         arrows_frame.grid(row=0, column=0, sticky="n", pady=10)
 
-        self.top_left_arrow = tk.Button(arrows_frame, text=" 🡔 ")
-        self.top_left_arrow.configure(font=("Consolas", 20))
-        self.top_left_arrow.grid(row=0, column=1, columnspan=2)
+        top_left_arrow = tk.Button(arrows_frame, text=" 🡔 ")
+        top_left_arrow.configure(font=("Consolas", 20))
+        top_left_arrow.grid(row=0, column=1, columnspan=2)
 
-        self.top_right_arrow = tk.Button(arrows_frame, text=" 🡕 ")
-        self.top_right_arrow.configure(font=("Consolas", 20))
-        self.top_right_arrow.grid(row=0, column=3, columnspan=2)
+        top_right_arrow = tk.Button(arrows_frame, text=" 🡕 ")
+        top_right_arrow.configure(font=("Consolas", 20))
+        top_right_arrow.grid(row=0, column=3, columnspan=2)
 
-        self.left_arrow = tk.Button(arrows_frame, text="🡐")
-        self.left_arrow.configure(font=("Consolas", 20))
-        self.left_arrow.grid(row=1, column=0, columnspan=2)
+        left_arrow = tk.Button(arrows_frame, text="🡐")
+        left_arrow.configure(font=("Consolas", 20))
+        left_arrow.grid(row=1, column=0, columnspan=2)
 
-        self.right_arrow = tk.Button(arrows_frame, text="🡒")
-        self.right_arrow.configure(font=("Consolas", 20))
-        self.right_arrow.grid(row=1, column=4, columnspan=2)
+        right_arrow = tk.Button(arrows_frame, text="🡒")
+        right_arrow.configure(font=("Consolas", 20))
+        right_arrow.grid(row=1, column=4, columnspan=2)
 
-        self.bottom_left_arrow = tk.Button(arrows_frame, text=" 🡗 ")
-        self.bottom_left_arrow.configure(font=("Consolas", 20))
-        self.bottom_left_arrow.grid(row=2, column=1, columnspan=2)
+        bottom_left_arrow = tk.Button(arrows_frame, text=" 🡗 ")
+        bottom_left_arrow.configure(font=("Consolas", 20))
+        bottom_left_arrow.grid(row=2, column=1, columnspan=2)
 
-        self.bottom_right_arrow = tk.Button(arrows_frame, text=" 🡖 ")
-        self.bottom_right_arrow.configure(font=("Consolas", 20))
-        self.bottom_right_arrow.grid(row=2, column=3, columnspan=2)
+        bottom_right_arrow = tk.Button(arrows_frame, text=" 🡖 ")
+        bottom_right_arrow.configure(font=("Consolas", 20))
+        bottom_right_arrow.grid(row=2, column=3, columnspan=2)
 
     def new_game_settings(self):  # might have to mess with `self.` to get values to be returned.
         self.settings_window = tk.Toplevel(self.window)
