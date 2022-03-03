@@ -110,7 +110,7 @@ class GUI:
                 node_val = starting_setup[row][column]
                 if node_val:
                     nodes[row][column] = tk.Button(game_board, padx=3, pady=3,
-                                                   text=f"{chr(abs(arr_len - row) + 64)}{column}",
+                                                   text=f"{chr(abs(arr_len - row) + 63)}{column}",
                                                    bg=self.PLAYER_COLOR_DICT[node_val],
                                                    fg="pink")
                     nodes[row][column].configure(font=("Consolas", 20))
