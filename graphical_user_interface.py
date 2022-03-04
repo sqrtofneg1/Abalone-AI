@@ -6,7 +6,6 @@ import node_arrays
 
 
 class GUI:
-
     PLAYER_COLOR_DICT = {1: "black", 2: "white", 3: "grey"}
 
     def __init__(self, settings=Settings.default_settings()):
@@ -28,9 +27,11 @@ class GUI:
 
         options_frame = tk.Frame(self.center_frame, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="#d5a976")
         options_frame.grid(row=0, column=1, sticky="ns")
+        self.setup_ai_next_move(options_frame)
         self.setup_directional_arrows(options_frame)
         self.setup_options_frame(options_frame)
 
+        self.selected_nodes = set()
         self.game_score = None
         self.turn_counter = None
         self.game_board = None
@@ -41,20 +42,27 @@ class GUI:
         self.history_p2_time = None
         self.history_p2_move = None
         self.history_p2_total_time = None
+        self.ai_next_move = None
         self.game = self.reset_game()
         print(self.game.state_rep)
 
     def setup_top_frame(self):
         top_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="tan")
         top_frame.grid(row=0, sticky="ew")
-        game_score = tk.Label(top_frame, text="Player 1: 0 \t Player 2: 0\t", bg="tan")
-        game_score.grid(row=0, column=0, sticky="nsw")
+        top_frame.grid_columnconfigure(0, weight=1)
+        top_frame.grid_columnconfigure(1, weight=1)
+        top_frame.grid_columnconfigure(2, weight=1)
 
-        turn_counter = tk.Label(top_frame, text="\tTurn: 1\t\t", bg="tan")
-        turn_counter.grid(row=0, column=1, sticky="ns")
+        settings_btn = tk.Button(top_frame, text="Settings", padx=25, pady=3, command=self.new_game_settings)
+        settings_btn.grid(row=0, column=0, sticky="nsw")
 
-        settings_btn = tk.Button(top_frame, text="Settings", padx=25, pady=5, command=self.new_game_settings)
-        settings_btn.grid(row=0, column=3, sticky="e")
+        game_score = tk.Label(top_frame, text="Player 1: 0 \t Player 2: 0", bg="tan")
+        game_score.configure(font=("Consolas", 24))
+        game_score.grid(row=0, column=1, sticky="ns")
+
+        turn_counter = tk.Label(top_frame, text="Turn: 1", bg="tan", padx=20)
+        turn_counter.configure(font=("Consolas", 14))
+        turn_counter.grid(row=0, column=2, sticky="nse")
 
         return game_score, turn_counter
 
@@ -65,19 +73,20 @@ class GUI:
         game_board.grid(row=0, column=0)
 
         arr_len = len(starting_setup)
-        nodes = [[None for _ in range(arr_len)] for _ in range(arr_len)]
+        self.nodes = [[None for _ in range(arr_len)] for _ in range(arr_len)]
         for row in range(arr_len):
             for column in range(arr_len):
                 node_val = starting_setup[row][column]
                 if node_val:
-                    nodes[row][column] = tk.Button(game_board, padx=3, pady=3,
-                                                   text=f"{chr(abs(arr_len - row) + 63)}{column}",
-                                                   bg=self.PLAYER_COLOR_DICT[node_val],
-                                                   fg="pink")
-                    nodes[row][column].configure(font=("Consolas", 20))
-                    nodes[row][column].grid(row=row, column=column * 2 + row + arr_len, columnspan=2)
+                    self.nodes[row][column] = tk.Button(game_board, padx=3, pady=3,
+                                                        text=f"{chr(abs(arr_len - row) + 63)}{column}",
+                                                        bg=self.PLAYER_COLOR_DICT[node_val],
+                                                        fg="pink",
+                                                        font=("Consolas", 20))
+                    self.nodes[row][column].grid(row=row, column=column * 2 + row + arr_len, columnspan=2)
+                    self.nodes[row][column].configure(command=lambda x=row, y=column: self.node_selected(x, y))
 
-        return game_board, nodes
+        return game_board
 
     @staticmethod
     def setup_moves_history(frame):
@@ -85,9 +94,11 @@ class GUI:
         history_frame = tk.Frame(frame, relief=tk.RAISED, borderwidth=1, bg="brown")
         history_frame.grid(row=0, column=2, sticky="ns")
 
-        history_p1 = tk.Label(history_frame, text="Player 1", pady=pad_y, bg="brown", fg="white")
+        history_p1 = tk.Label(history_frame, text="Player 1", bg="brown", fg="white")
+        history_p1.configure(font=("Segoe UI", 16))
         history_p1.grid(row=0, column=0, columnspan=2)
-        history_p2 = tk.Label(history_frame, text="Player 2", pady=pad_y, bg="brown", fg="white")
+        history_p2 = tk.Label(history_frame, text="Player 2", bg="brown", fg="white")
+        history_p2.configure(font=("Segoe UI", 16))
         history_p2.grid(row=0, column=2, columnspan=2)
 
         hist_h = 30
@@ -125,26 +136,37 @@ class GUI:
         return history_p1_move, history_p1_time, history_p2_move, \
                history_p2_time, history_p1_total_time, history_p2_total_time
 
+    def setup_ai_next_move(self, frame):
+
+        ai_next_move_frame = tk.Frame(frame, relief=tk.RAISED, borderwidth=1, bg="#d5a976")
+        ai_next_move_frame.grid(row=0, column=0, sticky="ew")
+
+        ai_next_move_label = tk.Label(ai_next_move_frame, text="AI's next move:", bg="#d5a976")
+        ai_next_move_label.grid(row=0, column=0, sticky="w")
+
+        self.ai_next_move = tk.Label(ai_next_move_frame, text="Next move here", bg="#d5a976")
+        self.ai_next_move.grid(row=1, column=0, sticky="ew")
+
     @staticmethod
     def setup_options_frame(frame):
         btn_pad_x = 25
         btn_pad_y = 5
         pad_y = 10
         start_btn = tk.Button(frame, text="Start", padx=btn_pad_x, pady=btn_pad_y)
-        start_btn.grid(row=1, column=0, pady=pad_y)
+        start_btn.grid(row=2, column=0, pady=pad_y)
         pause_btn = tk.Button(frame, text="Pause", padx=btn_pad_x, pady=btn_pad_y)
-        pause_btn.grid(row=2, column=0, pady=pad_y)
+        pause_btn.grid(row=3, column=0, pady=pad_y)
         stop_btn = tk.Button(frame, text="Stop", padx=btn_pad_x, pady=btn_pad_y)
-        stop_btn.grid(row=3, column=0, pady=pad_y)
+        stop_btn.grid(row=4, column=0, pady=pad_y)
         reset_btn = tk.Button(frame, text="Reset", padx=btn_pad_x, pady=btn_pad_y)
-        reset_btn.grid(row=4, column=0, pady=pad_y)
+        reset_btn.grid(row=5, column=0, pady=pad_y)
         undo_btn = tk.Button(frame, text="Undo", padx=btn_pad_x, pady=btn_pad_y)
-        undo_btn.grid(row=5, column=0, pady=pad_y)
+        undo_btn.grid(row=6, column=0, pady=pad_y)
 
     @staticmethod
     def setup_directional_arrows(frame):
         arrows_frame = tk.Frame(frame, relief=tk.RAISED, borderwidth=1)
-        arrows_frame.grid(row=0, column=0, sticky="n", pady=10)
+        arrows_frame.grid(row=1, column=0, sticky="n", pady=10)
 
         top_left_arrow = tk.Button(arrows_frame, text=" 🡔 ")
         top_left_arrow.configure(font=("Consolas", 20))
@@ -251,14 +273,28 @@ class GUI:
         self.game_score, self.turn_counter = self.setup_top_frame()
 
         # Game Board
-        self.game_board, self.nodes = self.setup_game_board_and_nodes(self.center_frame,
-                                                                      node_arrays.STARTING_LAYOUT[self.settings.layout])
+        self.game_board = self.setup_game_board_and_nodes(self.center_frame,
+                                                          node_arrays.STARTING_LAYOUT[self.settings.layout])
         # Moves History
         self.history_p1_move, self.history_p1_time, \
-            self.history_p2_move, self.history_p2_time, \
-            self.history_p1_total_time, self.history_p2_total_time = self.setup_moves_history(self.center_frame)
+        self.history_p2_move, self.history_p2_time, \
+        self.history_p1_total_time, self.history_p2_total_time = self.setup_moves_history(self.center_frame)
 
         return Game(self.settings)
+
+    def node_selected(self, row, column):
+        button = self.nodes[row][column]
+        button_text = button.cget("text")
+
+        if button_text not in self.selected_nodes:
+            button.configure(relief=tk.SUNKEN)
+            button.configure(fg="yellow")
+            self.selected_nodes.add(button_text)
+        else:
+            button.configure(relief=tk.RAISED)
+            button.configure(fg="pink")
+            self.selected_nodes.remove(button_text)
+        print(f"{button_text} selected")
 
     def run_gui(self):
         self.window.mainloop()
