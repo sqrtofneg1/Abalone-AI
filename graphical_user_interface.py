@@ -1,51 +1,11 @@
 import tkinter as tk
+
+from game import Game
 from settings import *
+import node_arrays
 
 
 class GUI:
-    """
-    - 0 is not a space
-    - 1 is black (player 1)
-    - 2 is white (player 2)
-    - 3 is empty
-    """
-    DEFAULT_START = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 0],
-                     [0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0],
-                     [0, 0, 0, 3, 3, 2, 2, 2, 3, 3, 0],
-                     [0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0],
-                     [0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0],
-                     [0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0],
-                     [0, 3, 3, 1, 1, 1, 3, 3, 0, 0, 0],
-                     [0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0],
-                     [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0],
-                     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
-
-    BELGIAN_DAISY_START = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 2, 2, 3, 1, 1, 0],
-                           [0, 0, 0, 0, 2, 2, 2, 1, 1, 1, 0],
-                           [0, 0, 0, 3, 2, 2, 3, 1, 1, 3, 0],
-                           [0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0],
-                           [0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0],
-                           [0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0],
-                           [0, 3, 1, 1, 3, 2, 2, 3, 0, 0, 0],
-                           [0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 0],
-                           [0, 1, 1, 3, 2, 2, 0, 0, 0, 0, 0],
-                           [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
-
-    GERMAN_DAISY_START = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                          [0, 0, 0, 0, 0, 1, 1, 3, 2, 2, 0],
-                          [0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0],
-                          [0, 0, 0, 3, 1, 1, 3, 2, 2, 3, 0],
-                          [0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 0],
-                          [0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 0],
-                          [0, 3, 3, 3, 3, 3, 3, 3, 3, 0, 0],
-                          [0, 3, 2, 2, 3, 1, 1, 3, 0, 0, 0],
-                          [0, 2, 2, 2, 1, 1, 1, 0, 0, 0, 0],
-                          [0, 2, 2, 3, 1, 1, 0, 0, 0, 0, 0],
-                          [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
-
-    STARTING_LAYOUT = {1: DEFAULT_START, 2: BELGIAN_DAISY_START, 3: GERMAN_DAISY_START}
 
     PLAYER_COLOR_DICT = {1: "black", 2: "white", 3: "grey"}
 
@@ -81,7 +41,8 @@ class GUI:
         self.history_p2_time = None
         self.history_p2_move = None
         self.history_p2_total_time = None
-        self.reset_game()
+        self.game = self.reset_game()
+        print(self.game.state_rep)
 
     def setup_top_frame(self):
         top_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="tan")
@@ -99,12 +60,12 @@ class GUI:
 
     def setup_game_board_and_nodes(self, frame, starting_setup=None):
         if starting_setup is None:
-            starting_setup = self.DEFAULT_START
+            starting_setup = node_arrays.STARTING_LAYOUT
         game_board = tk.Frame(frame, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="#7F694C")
         game_board.grid(row=0, column=0)
 
         arr_len = len(starting_setup)
-        nodes = [[None for row in range(arr_len)] for column in range(arr_len)]
+        nodes = [[None for _ in range(arr_len)] for _ in range(arr_len)]
         for row in range(arr_len):
             for column in range(arr_len):
                 node_val = starting_setup[row][column]
@@ -291,11 +252,13 @@ class GUI:
 
         # Game Board
         self.game_board, self.nodes = self.setup_game_board_and_nodes(self.center_frame,
-                                                                      self.STARTING_LAYOUT[self.settings.layout])
+                                                                      node_arrays.STARTING_LAYOUT[self.settings.layout])
         # Moves History
         self.history_p1_move, self.history_p1_time, \
             self.history_p2_move, self.history_p2_time, \
             self.history_p1_total_time, self.history_p2_total_time = self.setup_moves_history(self.center_frame)
+
+        return Game(self.settings)
 
     def run_gui(self):
         self.window.mainloop()
