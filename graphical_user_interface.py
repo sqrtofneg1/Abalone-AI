@@ -163,8 +163,7 @@ class GUI:
         undo_btn = tk.Button(frame, text="Undo", padx=btn_pad_x, pady=btn_pad_y)
         undo_btn.grid(row=6, column=0, pady=pad_y)
 
-    @staticmethod
-    def setup_directional_arrows(frame):
+    def setup_directional_arrows(self, frame):
         arrows_frame = tk.Frame(frame, relief=tk.RAISED, borderwidth=1)
         arrows_frame.grid(row=1, column=0, sticky="n", pady=10)
 
@@ -191,6 +190,9 @@ class GUI:
         bottom_right_arrow = tk.Button(arrows_frame, text=" 🡖 ")
         bottom_right_arrow.configure(font=("Consolas", 20))
         bottom_right_arrow.grid(row=2, column=3, columnspan=2)
+
+        clear_selection = tk.Button(arrows_frame, text="Clear \n Selection", command=self.clear_selection)
+        clear_selection.grid(row=1, column=2, columnspan=2, sticky="nesw")
 
     def new_game_settings(self):  # might have to mess with `self.` to get values to be returned.
         self.settings_window = tk.Toplevel(self.window)
@@ -284,17 +286,22 @@ class GUI:
 
     def node_selected(self, row, column):
         button = self.nodes[row][column]
-        button_text = button.cget("text")
 
-        if button_text not in self.selected_nodes:
+        if button not in self.selected_nodes:
             button.configure(relief=tk.SUNKEN)
             button.configure(fg="yellow")
-            self.selected_nodes.add(button_text)
+            self.selected_nodes.add(button)
         else:
             button.configure(relief=tk.RAISED)
             button.configure(fg="pink")
-            self.selected_nodes.remove(button_text)
-        print(f"{button_text} selected")
+            self.selected_nodes.remove(button)
+        print(f"{button['text']} selected")
+
+    def clear_selection(self):
+        for button in self.selected_nodes:
+            button.configure(relief=tk.RAISED)
+            button.configure(fg="pink")
+        self.selected_nodes.clear()
 
     def run_gui(self):
         self.window.mainloop()
