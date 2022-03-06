@@ -14,7 +14,8 @@ class StateRepresentation:
         return self.board[row][column]
 
     def get_marble_count(self, player):
-        pass
+        player_marbles = {node for row in self.board for node in row if node.get_state().value == player}
+        return len(player_marbles)
 
     def get_node_in_direction_of_node(self, row, column, direction):
         result_row = row + direction.value[0]

@@ -45,6 +45,7 @@ class GUI:
         self.ai_next_move = None
         self.game = self.reset_game()
         print(self.game.state_rep)
+        print(self.game.state_rep.get_marble_count(1))
 
     def setup_top_frame(self):
         top_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="tan")
@@ -192,7 +193,7 @@ class GUI:
         bottom_right_arrow.grid(row=2, column=3, columnspan=2)
 
         clear_selection = tk.Button(arrows_frame, text="Clear \n Selection", command=self.clear_selection)
-        clear_selection.grid(row=1, column=2, columnspan=2, sticky="nesw")
+        clear_selection.grid(row=1, column=2, columnspan=2, sticky="nsew")
 
     def new_game_settings(self):  # might have to mess with `self.` to get values to be returned.
         self.settings_window = tk.Toplevel(self.window)
