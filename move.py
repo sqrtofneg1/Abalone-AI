@@ -7,6 +7,11 @@ class Move:
         self.end_node = end_node
         self.direction = direction
 
+    def __repr__(self):
+        return f"{self.start_node.get_front_end_coords()}" \
+               f"-{self.end_node.get_front_end_coords()}" \
+               f"-{self.direction.name}"
+
 
 class Direction(Enum):
     """

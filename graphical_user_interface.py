@@ -31,7 +31,6 @@ class GUI:
         self.setup_directional_arrows(options_frame)
         self.setup_options_frame(options_frame)
 
-        self.selected_nodes = set()
         self.game_score = None
         self.turn_counter = None
         self.game_board = None
@@ -46,48 +45,7 @@ class GUI:
         self.game = self.reset_game()
         print(self.game.state_rep)
         print(self.game.state_rep.get_marble_count(1))
-
-    def setup_top_frame(self):
-        top_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="tan")
-        top_frame.grid(row=0, sticky="ew")
-        top_frame.grid_columnconfigure(0, weight=1)
-        top_frame.grid_columnconfigure(1, weight=1)
-        top_frame.grid_columnconfigure(2, weight=1)
-
-        settings_btn = tk.Button(top_frame, text="Settings", padx=25, pady=3, command=self.new_game_settings)
-        settings_btn.grid(row=0, column=0, sticky="nsw")
-
-        game_score = tk.Label(top_frame, text="Player 1: 0 \t Player 2: 0", bg="tan")
-        game_score.configure(font=("Consolas", 24))
-        game_score.grid(row=0, column=1, sticky="ns")
-
-        turn_counter = tk.Label(top_frame, text="Turn: 1", bg="tan", padx=20)
-        turn_counter.configure(font=("Consolas", 14))
-        turn_counter.grid(row=0, column=2, sticky="nse")
-
-        return game_score, turn_counter
-
-    def setup_game_board_and_nodes(self, frame, starting_setup=None):
-        if starting_setup is None:
-            starting_setup = node_arrays.STARTING_LAYOUT
-        game_board = tk.Frame(frame, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="#7F694C")
-        game_board.grid(row=0, column=0)
-
-        arr_len = len(starting_setup)
-        self.nodes = [[None for _ in range(arr_len)] for _ in range(arr_len)]
-        for row in range(arr_len):
-            for column in range(arr_len):
-                node_val = starting_setup[row][column]
-                if node_val:
-                    self.nodes[row][column] = tk.Button(game_board, padx=3, pady=3,
-                                                        text=f"{chr(abs(arr_len - row) + 63)}{column}",
-                                                        bg=self.PLAYER_COLOR_DICT[node_val],
-                                                        fg="pink",
-                                                        font=("Consolas", 20))
-                    self.nodes[row][column].grid(row=row, column=column * 2 + row + arr_len, columnspan=2)
-                    self.nodes[row][column].configure(command=lambda x=row, y=column: self.node_selected(x, y))
-
-        return game_board
+        self.selected_nodes = set()
 
     @staticmethod
     def setup_moves_history(frame):
@@ -137,17 +95,6 @@ class GUI:
         return history_p1_move, history_p1_time, history_p2_move, \
                history_p2_time, history_p1_total_time, history_p2_total_time
 
-    def setup_ai_next_move(self, frame):
-
-        ai_next_move_frame = tk.Frame(frame, relief=tk.RAISED, borderwidth=1, bg="#d5a976")
-        ai_next_move_frame.grid(row=0, column=0, sticky="ew")
-
-        ai_next_move_label = tk.Label(ai_next_move_frame, text="AI's next move:", bg="#d5a976")
-        ai_next_move_label.grid(row=0, column=0, sticky="w")
-
-        self.ai_next_move = tk.Label(ai_next_move_frame, text="Next move here", bg="#d5a976")
-        self.ai_next_move.grid(row=1, column=0, sticky="ew")
-
     @staticmethod
     def setup_options_frame(frame):
         btn_pad_x = 25
@@ -163,6 +110,71 @@ class GUI:
         reset_btn.grid(row=5, column=0, pady=pad_y)
         undo_btn = tk.Button(frame, text="Undo", padx=btn_pad_x, pady=btn_pad_y)
         undo_btn.grid(row=6, column=0, pady=pad_y)
+
+    @staticmethod
+    def is_valid_selection(start_marble, end_marble):
+        """
+        Checks that the selected marbles (from start to end) are in-line
+        and only counts up to 3 marbles total.
+
+        :param start_marble: the first of the selected marbles
+        :param end_marble: the last of the selected marbles
+        :return: True if the selection is valid, False otherwise
+        """
+        pass    # TODO: implementation
+
+    def setup_top_frame(self):
+        top_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="tan")
+        top_frame.grid(row=0, sticky="ew")
+        top_frame.grid_columnconfigure(0, weight=1)
+        top_frame.grid_columnconfigure(1, weight=1)
+        top_frame.grid_columnconfigure(2, weight=1)
+
+        settings_btn = tk.Button(top_frame, text="Settings", padx=25, pady=3, command=self.new_game_settings)
+        settings_btn.grid(row=0, column=0, sticky="nsw")
+
+        game_score = tk.Label(top_frame, text="Player 1: 0 \t Player 2: 0", bg="tan")
+        game_score.configure(font=("Consolas", 24))
+        game_score.grid(row=0, column=1, sticky="ns")
+
+        turn_counter = tk.Label(top_frame, text="Turn: 1", bg="tan", padx=20)
+        turn_counter.configure(font=("Consolas", 14))
+        turn_counter.grid(row=0, column=2, sticky="nse")
+
+        return game_score, turn_counter
+
+    def setup_game_board_and_nodes(self, frame, starting_setup=None):
+        if starting_setup is None:
+            starting_setup = node_arrays.STARTING_LAYOUT
+        game_board = tk.Frame(frame, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="#7F694C")
+        game_board.grid(row=0, column=0)
+
+        arr_len = len(starting_setup)
+        self.nodes = [[None for _ in range(arr_len)] for _ in range(arr_len)]
+        for row in range(arr_len):
+            for column in range(arr_len):
+                node_val = starting_setup[row][column]
+                if node_val:
+                    self.nodes[row][column] = tk.Button(game_board, padx=3, pady=3,
+                                                        text=f"{chr(abs(arr_len - row) + 63)}{column}",
+                                                        bg=self.PLAYER_COLOR_DICT[node_val],
+                                                        fg="pink",
+                                                        font=("Consolas", 20))
+                    self.nodes[row][column].grid(row=row, column=column * 2 + row + arr_len, columnspan=2)
+                    self.nodes[row][column].configure(command=lambda x=row, y=column: self.node_selected(x, y))
+
+        return game_board
+
+    def setup_ai_next_move(self, frame):
+
+        ai_next_move_frame = tk.Frame(frame, relief=tk.RAISED, borderwidth=1, bg="#d5a976")
+        ai_next_move_frame.grid(row=0, column=0, sticky="ew")
+
+        ai_next_move_label = tk.Label(ai_next_move_frame, text="AI's next move:", bg="#d5a976")
+        ai_next_move_label.grid(row=0, column=0, sticky="w")
+
+        self.ai_next_move = tk.Label(ai_next_move_frame, text="Next move here", bg="#d5a976")
+        self.ai_next_move.grid(row=1, column=0, sticky="ew")
 
     def setup_directional_arrows(self, frame):
         arrows_frame = tk.Frame(frame, relief=tk.RAISED, borderwidth=1)
