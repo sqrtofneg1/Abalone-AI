@@ -12,6 +12,20 @@ class Move:
                f"-{self.end_node.get_front_end_coords()}" \
                f"-{self.direction.name}"
 
+    def is_inline_move(self):
+        if self.start_node == self.end_node:
+            return False
+        for i in range(1, 3):
+            result_row_from_start = self.start_node.row + self.direction.value[0][0] * i
+            result_column_from_start = self.start_node.column + self.direction.value[0][1] * i
+            if (result_row_from_start == self.end_node.row) & (result_column_from_start == self.end_node.column):
+                return True
+            result_row_from_end = self.end_node.row + self.direction.value[0][0] * i
+            result_column_from_end = self.end_node.column + self.direction.value[0][1] * i
+            if (result_row_from_end == self.start_node.row) & (result_column_from_end == self.start_node.column):
+                return True
+        return False
+
 
 class Direction(Enum):
     """
@@ -25,5 +39,5 @@ class Direction(Enum):
     BR = (1, 0), 'Bottom-Right'
 
     @staticmethod
-    def all_directions():
-        return {Direction.L, Direction.R, Direction.TL, Direction.TR, Direction.BL, Direction.BR}
+    def left_directions():
+        return {Direction.L, Direction.TL, Direction.BL}

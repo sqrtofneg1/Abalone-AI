@@ -23,7 +23,7 @@ class Node:
 
     def __repr__(self):
         if self.row is not None and self.column is not None:
-            return f"{self.get_front_end_coords()} - {self.node_value.value}"
+            return f"{self.get_front_end_coords()}-{self.node_value.value}"
         else:
             return f"{self.node_value.value}"
 
