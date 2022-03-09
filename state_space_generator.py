@@ -8,17 +8,22 @@ class StateSpaceGenerator:
     def __init__(self, state_rep):
         self.state_rep = state_rep
 
-    def generate_state_space(self, state_rep):
-        pass  # should return an array of Move objects
+    def generate_state_space(self):
+        all_valid_moves = set()
+        all_valid_moves.update(self.generate_one_marble_moves())
+        all_valid_moves.update(self.generate_two_marble_moves())
+        all_valid_moves.update(self.generate_three_marble_moves())
+        state_space = {self.state_rep.apply_move(move) for move in all_valid_moves}
+        return state_space
 
     def generate_one_marble_moves(self):
         curr_player_marbles = self.state_rep.get_all_marbles_for_player(self.state_rep.player)
-        moves_generated = []
+        moves_generated = set()
         for node in curr_player_marbles:
             direction_dict = self.get_adjacent_nodes_values(node)
             for direction, adj_node_value in direction_dict.items():
                 if adj_node_value == NodeValue.EMPTY:
-                    moves_generated.append(Move(node, node, direction))
+                    moves_generated.add(Move(node, node, direction))
         return moves_generated
 
     def generate_two_marble_moves(self):
@@ -66,6 +71,12 @@ class StateSpaceGenerator:
                 return True
         return False
 
+    def generate_three_marble_moves(self):
+        marble_selections = self.get_valid_three_marble_selections()
+        all_moves = {Move(node1, node2, direction) for (node1, node2) in marble_selections for direction in Direction}
+        valid_moves = {move for move in all_moves if self.is_valid_three_marble_move(move)}
+        return valid_moves
+
     def get_valid_three_marble_selections(self):
         """
         Returns a set of tuples of nodes (Node1, Node2) for all valid 3 marble selections
@@ -82,12 +93,6 @@ class StateSpaceGenerator:
                     if (marble1.node_value == marble2.node_value) & (marble1.node_value == marble3.node_value):
                         valid_marble_selections.add((marble1, marble3))
         return valid_marble_selections
-
-    def generate_three_marble_moves(self):
-        marble_selections = self.get_valid_three_marble_selections()
-        all_moves = {Move(node1, node2, direction) for (node1, node2) in marble_selections for direction in Direction}
-        valid_moves = {move for move in all_moves if self.is_valid_three_marble_move(move)}
-        return valid_moves
 
     def is_valid_three_marble_move(self, move):
         result_start_node = self.get_node_in_direction_of_node(move.start_node, move.direction)  # location of start node after move
