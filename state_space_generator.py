@@ -1,3 +1,4 @@
+from file_reader import File
 from move import Move, Direction
 from state_representation import StateRepresentation
 
@@ -39,8 +40,16 @@ class StateSpaceGenerator:
         return {direction: self.get_node_in_direction_of_node(node, direction).node_value
                 for direction in Direction}
 
-
 if __name__ == "__main__":
     import node_arrays
     stateSpaceGen = StateSpaceGenerator(StateRepresentation.get_start_state_rep(node_arrays.DEFAULT_START))
-    print(stateSpaceGen.generate_one_marble_moves())    # implement a way to sort move outputs alphabetically?
+    # print(stateSpaceGen.generate_one_marble_moves())    # implement a way to sort move outputs alphabetically?
+    # file = File("Test1.txt")
+    # file.create_move_file(stateSpaceGen.generate_one_marble_moves())
+    # file.create_board_file()
+    # print(stateSpaceGen.state_rep)
+    # print(stateSpaceGen.state_rep._board)
+    # print(stateSpaceGen.state_rep.get_all_marbles_for_player(1)[0].get_front_end_coords() + stateSpaceGen.state_rep.get_all_marbles_for_player(1)[0]._node_value.)
+    print(stateSpaceGen.state_rep.get_all_marbles_for_player(2))
+    print(stateSpaceGen.state_rep.sort_all_marbles_for_player(stateSpaceGen.state_rep.get_all_marbles_for_player(2)))
+

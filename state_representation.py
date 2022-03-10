@@ -60,6 +60,9 @@ class StateRepresentation:
             # new_state_rep = StateRepresentation(1, updated_board)
         pass
 
+    def sort_all_marbles_for_player(self, set_of_marbles_for_player):
+        return sorted(sorted(set_of_marbles_for_player, key=lambda x: x.get_column()), key=lambda x: x.get_row(), reverse=True)
+
     @property
     def player(self):
         return self._player

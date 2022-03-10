@@ -21,11 +21,28 @@ class Node:
         self._row = row
         self._column = column
 
+    # def __repr__(self):
+    #     if self.row is not None and self.column is not None:
+    #         return f"{self.get_front_end_coords()} - {self.node_value.value}"
+    #     else:
+    #         return f"{self.node_value.value}"
+
     def __repr__(self):
         if self.row is not None and self.column is not None:
-            return f"{self.get_front_end_coords()} - {self.node_value.value}"
+            if self.node_value.value == 1:
+                return f"{self.get_front_end_coords()}b"
+            elif self.node_value.value == 2:
+                return f"{self.get_front_end_coords()}w"
+            else:
+                return f"{self.get_front_end_coords()} - {self.node_value.value}"
         else:
             return f"{self.node_value.value}"
+
+    def get_row(self):
+        return self._row
+
+    def get_column(self):
+        return self._column
 
     @staticmethod
     def get_row_from_alpha(alpha):
