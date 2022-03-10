@@ -1,7 +1,4 @@
-from copy import deepcopy
 from enum import Enum, auto
-
-import node_arrays
 
 
 class Move:
