@@ -52,13 +52,12 @@ class StateRepresentation:
         return len(self.get_all_marbles_for_player(player))
 
     def apply_move(self, move):
+        updated_board = None  # TODO: apply the move to a new board
         if self.player == 1:
-            self.player = 2  # this is an option, updating itself
-            # new_state_rep = StateRepresentation(2, updated_board)  # this is the other option, new StateRep
+            new_state_rep = StateRepresentation(2, updated_board)  # this is the other option, new StateRep
         else:
-            self.player = 1
-            # new_state_rep = StateRepresentation(1, updated_board)
-        pass
+            new_state_rep = StateRepresentation(1, updated_board)
+        return new_state_rep
 
     def sort_all_marbles_for_player(self, set_of_marbles_for_player):
         return sorted(sorted(set_of_marbles_for_player, key=lambda x: x.get_column()), key=lambda x: x.get_row(), reverse=True)
