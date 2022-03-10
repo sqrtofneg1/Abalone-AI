@@ -1,4 +1,4 @@
-from node import NodeValue
+from node import NodeValue, Node
 from state_representation import StateRepresentation
 from state_space_generator import StateSpaceGenerator
 
@@ -75,14 +75,51 @@ class File:
             f.write(data_string_version)
         f.close()
 
+    @staticmethod
+    def convert_node_value(text):
+        """
+        Returns the enum value of the node value.
+        """
+        if(text.lower() == "w"):
+            return NodeValue.WHITE
+        elif (text.lower() == "b"):
+            return NodeValue.BLACK
+        else:
+            return NodeValue.INVALID
+
+    def get_board_from_file(self):
+        """
+        Returns a list consisting of Nodes representing marbles.
+        """
+        files = self.parse_test_file()
+        curr_player = files.pop(0)
+        new_board = []
+        for file in files:
+            col = int(file[1])
+            row = int(Node.get_row_from_alpha(file[0]))
+            value = File.convert_node_value(file[2])
+            new_node = Node(value, row, col)
+            new_board.append(new_node)
+        return curr_player,new_board
+
+    def get_state_rep(self):
+        """Returns a State representation"""
+        curr_player, board = self.get_board_from_file()
+        state_representation = StateRepresentation(File.convert_node_value(curr_player).value,
+                                                   StateRepresentation.get_board_from_nodes(board))
+        return state_representation
+
 
 if __name__ == "__main__":
     import node_arrays
 
-    stateSpaceGen = StateSpaceGenerator(StateRepresentation.get_start_state_rep(node_arrays.DEFAULT_START))
+    # stateSpaceGen = StateSpaceGenerator(StateRepresentation.get_start_state_rep(node_arrays.DEFAULT_START))
     # print(stateSpaceGen.generate_one_marble_moves())
     # print(stateSpaceGen.state_rep.get_all_marbles_for_player(2))
     file = File("Test1.input")
-    file.read_from_file()
-    file.create_board_file(stateSpaceGen.generate_state_space())
+    print(file.get_state_rep())
+    # file.read_from_file()
+    # file.create_board_file(stateSpaceGen.generate_state_space())
+
+
     # print(file.parse_test_file())

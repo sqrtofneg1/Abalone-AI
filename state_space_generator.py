@@ -250,6 +250,9 @@ class StateSpaceGenerator:
         """
         return {self.get_node_in_direction_of_node(node, direction) for direction in Direction.left_directions()}
 
+    @staticmethod
+    def get_board_from_file(file_name):
+        file_reader
 
 if __name__ == "__main__":
     import node_arrays
