@@ -13,8 +13,7 @@ class StateRepresentation:
         """
         self._player = current_player
         self._board = board  # 2d array of Nodes
-        self.p1_marbles = self.get_marble_count(1)
-        self.p2_marbles = self.get_marble_count(2)
+        self.scores = [14 - self.get_marble_count(1), 14 - self.get_marble_count(2)]
 
     def __repr__(self):
         node_str = ""
@@ -22,7 +21,7 @@ class StateRepresentation:
             for column in row:
                 node_str = ''.join((node_str, f"{column.node_value.value} "))
             node_str = ''.join((node_str, "\n"))
-        return f"Turn: player {self.player} {node_str}\nP1 marbles: {self.p1_marbles} P2 marbles: {self.p2_marbles}"
+        return f"\nPlayer {self.player}'s turn --- P1 score: {self.scores[0]} --- P2 Score: {self.scores[1]}\n{node_str}"
 
     @staticmethod
     def get_start_state_rep(start_layout):
@@ -42,6 +41,22 @@ class StateRepresentation:
                     board[row][column] = Node(NodeValue.EMPTY, row, column)  # Set all remaining nodes to be empty nodes
         return board
 
+    @property
+    def player(self):
+        return self._player
+
+    @player.setter
+    def player(self, value):
+        self._player = value
+
+    @property
+    def board(self):
+        return self._board
+
+    @board.setter
+    def board(self, value):
+        self._board = value
+
     def get_node(self, row, column):
         return self._board[row][column]
 
@@ -50,19 +65,3 @@ class StateRepresentation:
 
     def get_marble_count(self, player):
         return len(self.get_all_marbles_for_player(player))
-
-    def apply_move(self, move):
-        updated_board = None  # TODO: apply the move to a new board
-        if self.player == 1:
-            new_state_rep = StateRepresentation(2, updated_board)  # this is the other option, new StateRep
-        else:
-            new_state_rep = StateRepresentation(1, updated_board)
-        return new_state_rep
-
-    @property
-    def player(self):
-        return self._player
-
-    @player.setter
-    def player(self, value):
-        self._player = value
