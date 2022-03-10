@@ -1,3 +1,8 @@
+from node import NodeValue
+from state_representation import StateRepresentation
+from state_space_generator import StateSpaceGenerator
+
+
 def flatten(array):
     rt = []
     for item in array:
@@ -11,6 +16,10 @@ def flatten(array):
 class File:
 
     def __init__(self, file_name):
+        """
+        A constructor that helps build and initializes its variables.
+        :param file_name: A String that represents a name of the file
+        """
         self._file_name = file_name
 
     def read_from_file(self):
@@ -36,33 +45,44 @@ class File:
         return flatten([player, board])
 
     def create_move_file(self, list_of_moves):
-        new_file_name = self._file_name.split(".")[0] + ".move.txt"
+        """
+        This method will create the Test<#>.move txt file.
+        :param list_of_moves: a list of Move objects.
+        """
+        new_file_name = self._file_name.split(".")[0] + ".move"
         f = open(new_file_name, "w")
         for move in list_of_moves:
             f.write(str(move) + "\n")
         f.close()
 
-    def create_board_file(self, list_of_state_representation):
-        new_file_name = self._file_name.split(".")[0] + ".board.txt"
-        data = set()
-        f = open(new_file_name, "w")
-        for state_representation in list_of_state_representation:
-            data.add(
-                str(state_representation.get_all_marbles_for_player(1)).replace("{", "").replace("}", "").replace(" ",
-                                                                                                                  ""))
-            data.add(
-                str(state_representation.get_all_marbles_for_player(2)).replace("{", "").replace("}", "").replace(" ",
-                                                                                                                  ""))
-        f.write(data + "\n")
+    def create_board_file(self, set_of_state_representation):
+        """
+        This method will create the Test<#>.board txt file.
+        :param set_of_state_representation: a set of StateRepresentation objects.
+        """
+        new_file_name = self._file_name.split(".")[0] + ".board"
+        f = open(new_file_name, "a+")
+        for state_representation in set_of_state_representation:
+            data = [str(state_representation.sort_all_marbles_for_player(
+                state_representation.get_all_marbles_for_player(NodeValue.BLACK.value)))
+                        .replace("[", "").replace("]", "").replace(" ",
+                                                                   "").replace("[", "").replace("]", ""),
+                    str(state_representation.sort_all_marbles_for_player(
+                        state_representation.get_all_marbles_for_player(NodeValue.WHITE.value)))
+                        .replace("[", "").replace("]", "").replace(" ",
+                                                                   "").replace("[", "").replace("]", "")]
+            data_string_version = str(data).replace("[", "").replace("]", "").replace(" ", "").replace("'", "") + "\n"
+            f.write(data_string_version)
         f.close()
 
 
-# print(parse_test_file("./test_inputs/Test1.input"))
+if __name__ == "__main__":
+    import node_arrays
 
-# if __name__ == "__main__":
-#     # import node_arrays
-#     # stateSpaceGen = StateSpaceGenerator(StateRepresentation.get_start_state_rep(node_arrays.DEFAULT_START))
-#     # print(stateSpaceGen.generate_one_marble_moves())    # implement a way to sort move outputs alphabetically?
-#     file = File("./test_inputs/Test1.input")
-#     file.read_from_file()
-#     print(file.parse_test_file())
+    stateSpaceGen = StateSpaceGenerator(StateRepresentation.get_start_state_rep(node_arrays.DEFAULT_START))
+    # print(stateSpaceGen.generate_one_marble_moves())
+    # print(stateSpaceGen.state_rep.get_all_marbles_for_player(2))
+    file = File("Test1.input")
+    file.read_from_file()
+    file.create_board_file(stateSpaceGen.generate_state_space())
+    # print(file.parse_test_file())

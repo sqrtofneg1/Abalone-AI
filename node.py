@@ -44,6 +44,9 @@ class Node:
     def get_column(self):
         return self._column
 
+    def get_node_value(self):
+        return self._node_value
+
     @staticmethod
     def get_row_from_alpha(alpha):
         """
