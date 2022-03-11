@@ -27,18 +27,18 @@ class StateSpaceGenerator:
 
     def generate_state_space(self):
         all_valid_moves = self.generate_all_valid_moves()
-        state_space = {self.apply_move(move) for move in all_valid_moves}
+        state_space = [self.apply_move(move) for move in all_valid_moves]
         return state_space
 
     def generate_all_valid_moves(self):
-        all_valid_moves = set()
-        all_valid_moves.update(self.generate_one_marble_moves())
-        all_valid_moves.update(self.generate_multi_marbles_moves())
+        all_valid_moves = []
+        all_valid_moves.extend(self.generate_one_marble_moves())
+        all_valid_moves.extend(self.generate_multi_marbles_moves())
         return all_valid_moves
 
     def generate_one_marble_moves(self):
         curr_player_marbles = self.state_rep.get_all_marbles_for_player(self.state_rep.player)
-        moves_generated = set()
+        moves_generated = []
         for node in curr_player_marbles:
             direction_dict = self.get_adjacent_nodes(node)
             for direction, adj_node in direction_dict.items():
@@ -46,7 +46,7 @@ class StateSpaceGenerator:
                     change_matrix = self.generate_change_matrix_from_nodes(self.state_rep.player,
                                                                            [node],
                                                                            [adj_node])
-                    moves_generated.add(Move(MoveType.Inline, node, node, direction, change_matrix))
+                    moves_generated.append(Move(MoveType.Inline, node, node, direction, change_matrix))
         return moves_generated
 
     def generate_multi_marbles_moves(self):
@@ -54,17 +54,18 @@ class StateSpaceGenerator:
         two_marble_incomplete_moves_generator = (Move(MoveType.Unknown, node1, node2, direction)
                                                  for (node1, node2) in two_marble_selections
                                                  for direction in Direction)
-        two_marble_moves = {self.process_two_marble_move(move)
-                            for move in two_marble_incomplete_moves_generator}
-        valid_moves = {move for move in two_marble_moves if move.move_type != MoveType.Invalid}
+        two_marble_moves = [self.process_two_marble_move(move)
+                            for move in two_marble_incomplete_moves_generator]
+        valid_moves = [move for move in two_marble_moves if move.move_type != MoveType.Invalid]
 
         three_marble_selections = self.get_valid_three_marble_selections()
         three_marble_incomplete_moves_generator = (Move(MoveType.Unknown, node1, node2, direction)
                                                    for (node1, node2) in three_marble_selections
                                                    for direction in Direction)
-        three_marble_moves = {self.process_three_marble_move(move)
-                              for move in three_marble_incomplete_moves_generator}
-        return valid_moves.union({move for move in three_marble_moves if move.move_type != MoveType.Invalid})
+        three_marble_moves = [self.process_three_marble_move(move)
+                              for move in three_marble_incomplete_moves_generator]
+        valid_moves.extend([move for move in three_marble_moves if move.move_type != MoveType.Invalid])
+        return valid_moves
 
     def get_valid_two_marble_selections(self):
         """
@@ -73,8 +74,8 @@ class StateSpaceGenerator:
         :return: a set of tuples of nodes, the valid selections for two marbles
         """
         curr_player_marbles = self.state_rep.get_all_marbles_for_player(self.state_rep.player)
-        return {(marble1, marble2) for marble1 in curr_player_marbles for marble2 in self.get_left_nodes(marble1)
-                if marble1.node_value == marble2.node_value}
+        return [(marble1, marble2) for marble1 in curr_player_marbles for marble2 in self.get_left_nodes(marble1)
+                if marble1.node_value == marble2.node_value]
 
     def process_two_marble_move(self, move):
         moved_start_node = self.get_node_in_direction_of_node(move.start_node,
@@ -123,7 +124,7 @@ class StateSpaceGenerator:
         for the current player.
         :return: a set of tuples of nodes, the valid selections for three marbles
         """
-        valid_marble_selections = set()
+        valid_marble_selections = []
         curr_player_marbles = self.state_rep.get_all_marbles_for_player(self.state_rep.player)
         for marble1 in curr_player_marbles:
             for direction in Direction.left_directions():
@@ -131,7 +132,7 @@ class StateSpaceGenerator:
                 if marble2.node_value is not NodeValue.INVALID:
                     marble3 = self.get_node_in_direction_of_node(marble2, direction)
                     if (marble1.node_value == marble2.node_value) & (marble1.node_value == marble3.node_value):
-                        valid_marble_selections.add((marble1, marble3))
+                        valid_marble_selections.append((marble1, marble3))
         return valid_marble_selections
 
     def process_three_marble_move(self, move):
