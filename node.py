@@ -38,15 +38,6 @@ class Node:
         else:
             return f"{self.node_value.value}"
 
-    def get_row(self):
-        return self._row
-
-    def get_column(self):
-        return self._column
-
-    def get_node_value(self):
-        return self._node_value
-
     @staticmethod
     def get_row_from_alpha(alpha):
         """
@@ -114,3 +105,9 @@ class NodeValue(Enum):
     WHITE = 2
     PLAYER_2 = 2
     EMPTY = 3
+
+    @staticmethod
+    def get_node_value_from_num(number):
+        for node_val in NodeValue:
+            if node_val.value == number:
+                return node_val

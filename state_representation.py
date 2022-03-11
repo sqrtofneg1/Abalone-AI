@@ -19,7 +19,7 @@ class StateRepresentation:
         node_str = ""
         for row in self._board:
             for column in row:
-                node_str = ''.join((node_str, f"{column.node_value.value} "))
+                node_str = ' '.join((node_str, f"{column.node_value.value} "))
             node_str = ''.join((node_str, "\n"))
         return f"\nPlayer {self.player}'s turn --- P1 score: {self.scores[0]} --- P2 Score: {self.scores[1]}\n{node_str}"
 
@@ -65,8 +65,3 @@ class StateRepresentation:
 
     def get_marble_count(self, player):
         return len(self.get_all_marbles_for_player(player))
-
-    @staticmethod
-    def sort_all_marbles_for_player(set_of_marbles_for_player):
-        return sorted(sorted(set_of_marbles_for_player, key=lambda x: x.get_column()), key=lambda x: x.get_row(),
-                      reverse=True)

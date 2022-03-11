@@ -14,7 +14,7 @@ class StateSpaceGenerator:
     def generate_change_matrix_from_nodes(moving_player, original_positions, new_positions, pushed_nodes=None):
         players_dict = {1: NodeValue.BLACK,
                         2: NodeValue.WHITE}
-        change_matrix = [[NodeValue.INVALID for row in range(11)] for column in range(11)]
+        change_matrix = [[NodeValue.INVALID for column in range(11)] for row in range(11)]
         for node in original_positions:
             change_matrix[node.row][node.column] = NodeValue.EMPTY
         for node in new_positions:
@@ -26,12 +26,15 @@ class StateSpaceGenerator:
         return change_matrix
 
     def generate_state_space(self):
+        all_valid_moves = self.generate_all_valid_moves()
+        state_space = {self.apply_move(move) for move in all_valid_moves}
+        return state_space
+
+    def generate_all_valid_moves(self):
         all_valid_moves = set()
         all_valid_moves.update(self.generate_one_marble_moves())
         all_valid_moves.update(self.generate_multi_marbles_moves())
-        state_space = {self.apply_move(move) for move in all_valid_moves}
-        print(next(iter(state_space)))
-        return state_space
+        return all_valid_moves
 
     def generate_one_marble_moves(self):
         curr_player_marbles = self.state_rep.get_all_marbles_for_player(self.state_rep.player)

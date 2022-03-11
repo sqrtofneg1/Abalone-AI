@@ -3,122 +3,120 @@ from state_representation import StateRepresentation
 from state_space_generator import StateSpaceGenerator
 
 
-def flatten(array):
-    rt = []
-    for item in array:
-        if isinstance(item, list):
-            rt.extend(flatten(item))
-        else:
-            rt.append(item)
-    return rt
-
-
-class File:
-
-    def __init__(self, file_name):
-        """
-        A constructor that helps build and initializes its variables.
-        :param file_name: A String that represents a name of the file
-        """
-        self._file_name = file_name
-
-    def read_from_file(self):
-        """
-        Returns an array of lines.
-        @params: file_name: String.
-        """
-        lines = []
-        input_file = open(self._file_name, "r")
-        for line in input_file:
-            lines.append(line)
-        input_file.close()
-        return lines
-
-    def parse_test_file(self):
-        """
-        Returns an array which has the user as the first index.
-        @params: file_name: String.
-        """
-        lines = self.read_from_file()
-        player = lines[0].replace("\n", "")
-        board = lines[1].replace("\n", "").split(",")
-        return flatten([player, board])
-
-    def create_move_file(self, list_of_moves):
-        """
-        This method will create the Test<#>.move txt file.
-        :param list_of_moves: a list of Move objects.
-        """
-        new_file_name = self._file_name.split(".")[0] + ".move"
-        f = open(new_file_name, "w")
-        for move in list_of_moves:
-            f.write(str(move) + "\n")
-        f.close()
-
-    def create_board_file(self, set_of_state_representation):
-        """
-        This method will create the Test<#>.board txt file.
-        :param set_of_state_representation: a set of StateRepresentation objects.
-        """
-        new_file_name = self._file_name.split(".")[0] + ".board"
-        f = open(new_file_name, "a+")
-        for state_representation in set_of_state_representation:
-            data = [str(state_representation.sort_all_marbles_for_player(
-                state_representation.get_all_marbles_for_player(NodeValue.BLACK.value)))
-                        .replace("[", "").replace("]", "").replace(" ",
-                                                                   "").replace("[", "").replace("]", ""),
-                    str(state_representation.sort_all_marbles_for_player(
-                        state_representation.get_all_marbles_for_player(NodeValue.WHITE.value)))
-                        .replace("[", "").replace("]", "").replace(" ",
-                                                                   "").replace("[", "").replace("]", "")]
-            data_string_version = str(data).replace("[", "").replace("]", "").replace(" ", "").replace("'", "") + "\n"
-            f.write(data_string_version)
-        f.close()
+class FileProcessor:
 
     @staticmethod
-    def convert_node_value(text):
+    def get_state_rep_from_file(file_name):
         """
-        Returns the enum value of the node value.
+        Processes the given file and returns a StateRepresentation object.
         """
-        if text.lower() == "w":
-            return NodeValue.WHITE
-        elif text.lower() == "b":
-            return NodeValue.BLACK
-        else:
-            return NodeValue.INVALID
+        lines = FileProcessor.read_lines_from_file(file_name)
+        marble_list = FileProcessor.get_marble_list_from_lines(lines)
+        curr_player, board = FileProcessor.get_player_and_board_from_marble_list(marble_list)
+        return StateRepresentation(FileProcessor.get_player_num_from_color(curr_player).value,
+                                   StateRepresentation.get_board_from_nodes(board))
 
-    def get_board_from_file(self):
+    @staticmethod
+    def read_lines_from_file(file_name):
+        """
+        Returns an array of lines.
+        """
+        lines = []
+        with open(file_name, "r") as input_file:
+            for line in input_file:
+                lines.append(line)
+        return lines
+
+    @staticmethod
+    def get_marble_list_from_lines(lines):
+        """
+        Returns an array which has the user as the first index.
+        """
+        player = lines[0].replace("\n", "")
+        board = lines[1].replace("\n", "").split(",")
+        return FileProcessor.flatten([player, board])
+
+    @staticmethod
+    def flatten(array):
+        result = []
+        for item in array:
+            if isinstance(item, list):
+                result.extend(FileProcessor.flatten(item))
+            else:
+                result.append(item)
+        return result
+
+    @staticmethod
+    def get_player_num_from_color(color_char):
+        """
+        Returns the corresponding NodeValue of the given color char.
+        """
+        return NodeValue.BLACK if color_char.lower() == "b" else NodeValue.WHITE
+
+    @staticmethod
+    def get_player_and_board_from_marble_list(marble_list):
         """
         Returns a list consisting of Nodes representing marbles.
         """
-        files = self.parse_test_file()
-        curr_player = files.pop(0)
-        new_board = []
-        for line in files:
-            col = int(line[1])
-            row = int(Node.get_row_from_alpha(line[0]))
-            value = File.convert_node_value(line[2])
-            new_node = Node(value, row, col)
-            new_board.append(new_node)
-        return curr_player, new_board
+        curr_player = marble_list.pop(0)
+        nodes_list = []
+        for marble in marble_list:
+            row = int(Node.get_row_from_alpha(marble[0]))
+            col = int(marble[1])
+            node_val = FileProcessor.get_player_num_from_color(marble[2])
+            new_node = Node(node_val, row, col)
+            nodes_list.append(new_node)
+        return curr_player, nodes_list
 
-    def get_state_rep(self):
-        """Returns a State representation"""
-        curr_player, board = self.get_board_from_file()
-        state_representation = StateRepresentation(File.convert_node_value(curr_player).value,
-                                                   StateRepresentation.get_board_from_nodes(board))
-        return state_representation
+    @staticmethod
+    def create_move_file(file_name, moves_list):
+        """
+        This method will create the Test<#>.move file.
+
+        :param file_name: name of file to create
+        :param moves_list: a list of Move objects.
+        """
+        new_file_name = file_name.split(".")[0] + ".move"
+        with open(new_file_name, "w") as f:
+            for move in moves_list:
+                f.write(str(move) + "\n")
+
+    @staticmethod
+    def create_board_file(file_name, state_space):
+        """
+        This method will create the Test<#>.board file.
+
+        :param file_name: name of file to create
+        :param state_space: a set of StateRepresentation objects.
+        """
+        new_file_name = file_name.split(".")[0] + ".board"
+        with open(new_file_name, "w+") as f:
+            for state in state_space:
+                data = [
+                    str(FileProcessor.sort_marbles_for_player(state.get_all_marbles_for_player(NodeValue.BLACK.value)))
+                        .replace("[", "").replace("]", "").replace(" ", "").replace("[", "").replace("]", ""),
+                    str(FileProcessor.sort_marbles_for_player(state.get_all_marbles_for_player(NodeValue.WHITE.value)))
+                        .replace("[", "").replace("]", "").replace(" ", "").replace("[", "").replace("]", "")
+                ]
+                data_string_version = str(data).replace("[", "").replace("]", "").replace(" ", "").replace("'", "") \
+                                      + "\n"
+                f.write(data_string_version)
+
+    @staticmethod
+    def sort_marbles_for_player(marbles_for_player):
+        return sorted(marbles_for_player, key=lambda node: (-node.row, node.column))
 
 
 if __name__ == "__main__":
-    import node_arrays
+    state_rep = FileProcessor.get_state_rep_from_file("test_inputs/Test1.input")
+    state_space_gen = StateSpaceGenerator(state_rep)
 
-    # stateSpaceGen = StateSpaceGenerator(StateRepresentation.get_start_state_rep(node_arrays.DEFAULT_START))
-    # print(stateSpaceGen.generate_one_marble_moves())
-    # print(stateSpaceGen.state_rep.get_all_marbles_for_player(2))
-    file = File("Test1.input")
-    print(file.get_state_rep())
-    # file.read_from_file()
-    # file.create_board_file(stateSpaceGen.generate_state_space())
+    valid_moves_list = state_space_gen.generate_all_valid_moves()
+    for valid_move in valid_moves_list:
+        print(valid_move)
+    FileProcessor.create_move_file("Test1", valid_moves_list)
 
-    # print(file.parse_test_file())
+    new_state_space = state_space_gen.generate_state_space()
+    for new_state in new_state_space:
+        print(new_state)
+    FileProcessor.create_board_file("Test1", new_state_space)
