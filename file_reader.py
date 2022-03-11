@@ -28,10 +28,10 @@ class File:
         @params: file_name: String.
         """
         lines = []
-        file = open(self._file_name, "r")
-        for line in file:
+        input_file = open(self._file_name, "r")
+        for line in input_file:
             lines.append(line)
-        file.close()
+        input_file.close()
         return lines
 
     def parse_test_file(self):
@@ -80,9 +80,9 @@ class File:
         """
         Returns the enum value of the node value.
         """
-        if(text.lower() == "w"):
+        if text.lower() == "w":
             return NodeValue.WHITE
-        elif (text.lower() == "b"):
+        elif text.lower() == "b":
             return NodeValue.BLACK
         else:
             return NodeValue.INVALID
@@ -94,13 +94,13 @@ class File:
         files = self.parse_test_file()
         curr_player = files.pop(0)
         new_board = []
-        for file in files:
-            col = int(file[1])
-            row = int(Node.get_row_from_alpha(file[0]))
-            value = File.convert_node_value(file[2])
+        for line in files:
+            col = int(line[1])
+            row = int(Node.get_row_from_alpha(line[0]))
+            value = File.convert_node_value(line[2])
             new_node = Node(value, row, col)
             new_board.append(new_node)
-        return curr_player,new_board
+        return curr_player, new_board
 
     def get_state_rep(self):
         """Returns a State representation"""
@@ -120,6 +120,5 @@ if __name__ == "__main__":
     print(file.get_state_rep())
     # file.read_from_file()
     # file.create_board_file(stateSpaceGen.generate_state_space())
-
 
     # print(file.parse_test_file())
