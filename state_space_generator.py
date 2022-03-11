@@ -2,6 +2,7 @@ from copy import deepcopy
 
 from node import NodeValue
 from move import Move, Direction, MoveType
+from move import Move, Direction
 from state_representation import StateRepresentation
 
 
@@ -30,6 +31,7 @@ class StateSpaceGenerator:
         all_valid_moves.update(self.generate_one_marble_moves())
         all_valid_moves.update(self.generate_multi_marbles_moves())
         state_space = {self.apply_move(move) for move in all_valid_moves}
+        print(next(iter(state_space)))
         return state_space
 
     def generate_one_marble_moves(self):
@@ -233,7 +235,6 @@ class StateSpaceGenerator:
     def get_adjacent_nodes(self, node):
         """
         Returns a dictionary with the adjacent nodes in all 6 directions.
-
         :param node: a Node
         :return: dictionary of direction : adjacent nodes
         """
@@ -249,6 +250,9 @@ class StateSpaceGenerator:
         """
         return {self.get_node_in_direction_of_node(node, direction) for direction in Direction.left_directions()}
 
+    @staticmethod
+    def get_board_from_file(file_name):
+        file_reader
 
 if __name__ == "__main__":
     import node_arrays
