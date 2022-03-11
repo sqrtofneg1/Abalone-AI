@@ -77,7 +77,7 @@ class FileProcessor:
         :param moves_list: a list of Move objects.
         """
         new_file_name = file_name.split(".")[0] + ".move"
-        with open(new_file_name, "w") as f:
+        with open(f"test_outputs/{new_file_name}", "w") as f:
             for move in moves_list:
                 f.write(str(move) + "\n")
 
@@ -90,7 +90,7 @@ class FileProcessor:
         :param state_space: a set of StateRepresentation objects.
         """
         new_file_name = file_name.split(".")[0] + ".board"
-        with open(new_file_name, "w+") as f:
+        with open(f"test_outputs/{new_file_name}", "w+") as f:
             for state in state_space:
                 data = [
                     str(FileProcessor.sort_marbles_for_player(state.get_all_marbles_for_player(NodeValue.BLACK.value)))
