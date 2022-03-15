@@ -1,8 +1,11 @@
 import tkinter as tk
 
 from game import Game
+from move import Direction, Move, MoveType
+from node import NodeValue, Node
 from settings import *
 import node_arrays
+from state_space_generator import StateSpaceGenerator
 
 
 class GUI:
@@ -43,9 +46,7 @@ class GUI:
         self.history_p2_total_time = None
         self.ai_next_move = None
         self.game = self.reset_game()
-        print(self.game.state_rep)
-        print(self.game.state_rep.get_marble_count(1))
-        self.selected_nodes = set()
+        self.selected_buttons = set()
 
     @staticmethod
     def setup_moves_history(frame):
@@ -61,7 +62,7 @@ class GUI:
         history_p2.grid(row=0, column=2, columnspan=2)
 
         hist_h = 30
-        hist_w = 30, 15
+        hist_w = 15, 15
 
         history_p1_move_label = tk.Label(history_frame, text="Move:", pady=pad_y, bg="brown",
                                          fg="white")
@@ -110,18 +111,6 @@ class GUI:
         reset_btn.grid(row=5, column=0, pady=pad_y)
         undo_btn = tk.Button(frame, text="Undo", padx=btn_pad_x, pady=btn_pad_y)
         undo_btn.grid(row=6, column=0, pady=pad_y)
-
-    @staticmethod
-    def is_valid_selection(start_marble, end_marble):
-        """
-        Checks that the selected marbles (from start to end) are in-line
-        and only counts up to 3 marbles total.
-
-        :param start_marble: the first of the selected marbles
-        :param end_marble: the last of the selected marbles
-        :return: True if the selection is valid, False otherwise
-        """
-        pass    # TODO: implementation
 
     def setup_top_frame(self):
         top_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="tan")
@@ -183,26 +172,32 @@ class GUI:
         top_left_arrow = tk.Button(arrows_frame, text=" 🡔 ")
         top_left_arrow.configure(font=("Consolas", 20))
         top_left_arrow.grid(row=0, column=1, columnspan=2)
+        top_left_arrow.configure(command=lambda direction=Direction.TL: self.apply_move(direction))
 
         top_right_arrow = tk.Button(arrows_frame, text=" 🡕 ")
         top_right_arrow.configure(font=("Consolas", 20))
         top_right_arrow.grid(row=0, column=3, columnspan=2)
+        top_right_arrow.configure(command=lambda direction=Direction.TR: self.apply_move(direction))
 
         left_arrow = tk.Button(arrows_frame, text="🡐")
         left_arrow.configure(font=("Consolas", 20))
         left_arrow.grid(row=1, column=0, columnspan=2)
+        left_arrow.configure(command=lambda direction=Direction.L: self.apply_move(direction))
 
         right_arrow = tk.Button(arrows_frame, text="🡒")
         right_arrow.configure(font=("Consolas", 20))
         right_arrow.grid(row=1, column=4, columnspan=2)
+        right_arrow.configure(command=lambda direction=Direction.R: self.apply_move(direction))
 
         bottom_left_arrow = tk.Button(arrows_frame, text=" 🡗 ")
         bottom_left_arrow.configure(font=("Consolas", 20))
         bottom_left_arrow.grid(row=2, column=1, columnspan=2)
+        bottom_left_arrow.configure(command=lambda direction=Direction.BL: self.apply_move(direction))
 
         bottom_right_arrow = tk.Button(arrows_frame, text=" 🡖 ")
         bottom_right_arrow.configure(font=("Consolas", 20))
         bottom_right_arrow.grid(row=2, column=3, columnspan=2)
+        bottom_right_arrow.configure(command=lambda direction=Direction.BR: self.apply_move(direction))
 
         clear_selection = tk.Button(arrows_frame, text="Clear \n Selection", command=self.clear_selection)
         clear_selection.grid(row=1, column=2, columnspan=2, sticky="nsew")
@@ -281,7 +276,7 @@ class GUI:
         self.settings = Settings(self.layout_var.get(), self.colour_var.get(), self.gamemode_var.get(),
                                  self.move_limit_var.get(), self.time_limit_p1_var.get(), self.time_limit_p2_var.get())
         self.settings_window.destroy()
-        self.reset_game()
+        self.game = self.reset_game()
 
     def reset_game(self):
         # Top frame: Player Score, Turn Counter, Settings button
@@ -300,21 +295,107 @@ class GUI:
     def node_selected(self, row, column):
         button = self.nodes[row][column]
 
-        if button not in self.selected_nodes:
+        if button not in self.selected_buttons:
             button.configure(relief=tk.SUNKEN)
             button.configure(fg="yellow")
-            self.selected_nodes.add(button)
+            self.selected_buttons.add(button)
         else:
             button.configure(relief=tk.RAISED)
             button.configure(fg="pink")
-            self.selected_nodes.remove(button)
-        print(f"{button['text']} selected")
+            self.selected_buttons.remove(button)
 
     def clear_selection(self):
-        for button in self.selected_nodes:
+        for button in self.selected_buttons:
             button.configure(relief=tk.RAISED)
             button.configure(fg="pink")
-        self.selected_nodes.clear()
+        self.selected_buttons.clear()
+
+    def get_move_from_gui(self, direction):
+        # Validation
+        selection_size = len(self.selected_buttons)
+        if selection_size == 0 or selection_size > 3:
+            return None
+        nodes = []
+        for button in self.selected_buttons:
+            text = button['text']
+            row = int(Node.get_row_from_alpha(text[0]))
+            col = int(text[1])
+            nodes.append(self.game.state_rep.get_node(row, col))
+        for node in nodes:
+            if node.node_value.value is not self.game.state_rep.player:
+                return None
+
+        if selection_size == 1:
+            for node in nodes:
+                result_row = node.row + direction.value[0][0]
+                result_column = node.column + direction.value[0][1]
+                adj_node = self.game.state_rep.get_node(result_row, result_column)
+                if adj_node.node_value == NodeValue.EMPTY:
+                    change_matrix = StateSpaceGenerator.generate_change_matrix_from_nodes(self.game.state_rep.player,
+                                                                                          [node], [adj_node])
+                    return Move(MoveType.Inline, node, node, direction, change_matrix)
+        else:
+            directions_between_nodes = set()
+            for node1 in nodes:
+                for node2 in nodes:
+                    # now we have 2 or 3 nodes that are all current player's marbles
+                    adj_nodes = [(direct, self.game.state_rep.get_node_in_direction_of_node(node1, direct))
+                                 for direct in Direction]
+                    for adj_node in adj_nodes:
+                        if node2 == adj_node[1]:
+                            directions_between_nodes.add(adj_node[0])
+
+            # if all the nodes are in a line
+            if len(directions_between_nodes) == 2:
+                start_and_end_nodes = []
+                for direction_between in directions_between_nodes:
+                    for node in nodes:
+                        if self.game.state_rep.get_node_in_direction_of_node(node, direction_between) not in nodes:
+                            start_and_end_nodes.append(node)
+
+                generator = StateSpaceGenerator(self.game.state_rep)
+                if selection_size == 2:
+                    move = generator.process_two_marble_move(Move(MoveType.Unknown, start_and_end_nodes[0],
+                                                                  start_and_end_nodes[1], direction))
+                else:
+                    move = generator.process_three_marble_move(Move(MoveType.Unknown, start_and_end_nodes[0],
+                                                                    start_and_end_nodes[1], direction))
+                if move.move_type is not MoveType.Invalid:
+                    return move
+                else:
+                    return None
+
+    def apply_move(self, direction):
+        move = self.get_move_from_gui(direction)
+        self.clear_selection()
+        if move is not None:
+            if self.game.state_rep.player == 1:
+                self.history_p1_move.insert(tk.END, repr(move))
+            else:
+                self.history_p2_move.insert(tk.END, repr(move))
+            self.game.apply_move(move)
+            self.redraw()
+        else:
+            print("error")
+
+    def update_turn_counter(self):
+        self.turn_counter['text'] = f"Turn: {(self.game.turn_counter + 1) // 2}"
+
+    def update_score(self):
+        self.game_score['text'] = f"Player 1: {self.game.state_rep.scores[0]} \t Player 2: {self.game.state_rep.scores[1]}"
+        pass
+
+    def update_nodes(self):
+        for row in range(11):
+            for column in range(11):
+                node = self.game.state_rep.get_node(row, column)
+                if node.node_value is not NodeValue.INVALID:
+                    self.nodes[row][column].configure(bg=self.PLAYER_COLOR_DICT[node.node_value.value])
+
+    def redraw(self):
+        self.update_score()
+        self.update_turn_counter()
+        self.update_nodes()
 
     def run_gui(self):
         self.window.mainloop()
