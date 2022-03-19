@@ -27,7 +27,8 @@ Or excute the command at the root of the project.
 
 
 ## Using the State Space Generator Tester:
-1. (Optional) If they don't exist, create /test_inputs and /test_outputs folders at the same root of state_space_generator_tester.exe
-2. Move all Test<#>.input files into the /test_inputs folder.
-3. Run state_space_generator_tester.exe to run the generator.
-4. All Test<#>.move and Test<#>.board files will be in the /test_outputs folder.
+1. Go to dist/ directory to find state_space_generator_tester.exe
+2. (Optional) If they don't exist, create /test_inputs and /test_outputs folders at the same root of state_space_generator_tester.exe
+3. Move all Test<#>.input files into the /test_inputs folder.
+4. Run state_space_generator_tester.exe to run the generator.
+5. All Test<#>.move and Test<#>.board files will be in the /test_outputs folder.
