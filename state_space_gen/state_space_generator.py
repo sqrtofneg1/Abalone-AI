@@ -60,7 +60,7 @@ class StateSpaceGenerator:
         curr_player_marbles = self.state.get_all_nodes_for_player(self.state.player)
         valid_moves = []
         for node in curr_player_marbles:
-            direction_dict = self.state.get_adjacent_nodes(node)
+            direction_dict = self.get_adjacent_nodes(node)
             for direction, adj_node in direction_dict.items():
                 if adj_node.node_value == NodeValue.EMPTY:
                     change_matrix = ChangeMatrix(self.state.player,
