@@ -1,55 +1,72 @@
+"""
+This module houses the StateSpaceGenerator class.
+"""
 from copy import deepcopy
 
-from node import NodeValue
-from move import Move, Direction, MoveType
-from state_representation import StateRepresentation
+from core.node import NodeValue
+from core.move import Move, Direction, MoveType, ChangeMatrix
+from core.state import State
 
 
 class StateSpaceGenerator:
+    """
+    Responsible for generating all legal moves for a given state, and
+    applying those moves to create the resulting states.
+    """
 
-    def __init__(self, state_rep):
-        self.state_rep = state_rep
+    def __init__(self, state):
+        """
+        Initializes a StateSpaceGenerator object.
 
-    @staticmethod
-    def generate_change_matrix_from_nodes(moving_player, original_positions, new_positions, pushed_nodes=None):
-        players_dict = {1: NodeValue.BLACK,
-                        2: NodeValue.WHITE}
-        change_matrix = [[NodeValue.INVALID for column in range(11)] for row in range(11)]
-        for node in original_positions:
-            change_matrix[node.row][node.column] = NodeValue.EMPTY
-        for node in new_positions:
-            change_matrix[node.row][node.column] = players_dict[moving_player]
-        if pushed_nodes:
-            other_player = 2 if moving_player == 1 else 1
-            for node in pushed_nodes:
-                change_matrix[node.row][node.column] = players_dict[other_player]
-        return change_matrix
+        :param state: a State object
+        """
+        self.state = state
 
     def generate_state_space(self):
+        """
+        Generates all legal resulting states from the starting state.
+
+        :return: a list of States
+        """
         all_valid_moves = self.generate_all_valid_moves()
         state_space = [self.apply_move(move) for move in all_valid_moves]
         return state_space
 
     def generate_all_valid_moves(self):
+        """
+        Generates all legal moves from the starting state.
+
+        :return: a list of Moves
+        """
         all_valid_moves = []
         all_valid_moves.extend(self.generate_one_marble_moves())
         all_valid_moves.extend(self.generate_multi_marbles_moves())
         return all_valid_moves
 
     def generate_one_marble_moves(self):
-        curr_player_marbles = self.state_rep.get_all_marbles_for_player(self.state_rep.player)
-        moves_generated = []
+        """
+        Generates all legal one-marble moves.
+
+        :return: a list of Moves
+        """
+        curr_player_marbles = self.state.get_all_nodes_for_player(self.state.player)
+        valid_moves = []
         for node in curr_player_marbles:
             direction_dict = self.get_adjacent_nodes(node)
             for direction, adj_node in direction_dict.items():
                 if adj_node.node_value == NodeValue.EMPTY:
-                    change_matrix = self.generate_change_matrix_from_nodes(self.state_rep.player,
-                                                                           [node],
-                                                                           [adj_node])
-                    moves_generated.append(Move(MoveType.Inline, node, node, direction, change_matrix))
-        return moves_generated
+                    change_matrix = ChangeMatrix(self.state.player,
+                                                 [node],
+                                                 [adj_node])
+                    valid_moves.append(Move(MoveType.Inline, node, node, direction, change_matrix))
+        return valid_moves
 
     def generate_multi_marbles_moves(self):
+        """
+        Generates all legal two and three marble moves.
+
+        :return: a list of Moves
+        """
         two_marble_selections = self.get_valid_two_marble_selections()
         two_marble_incomplete_moves_generator = (Move(MoveType.Unknown, node1, node2, direction)
                                                  for (node1, node2) in two_marble_selections
@@ -71,13 +88,21 @@ class StateSpaceGenerator:
         """
         Returns a set of tuples of nodes (Node1, Node2) for all valid 2 marble selections
         for the current player.
-        :return: a set of tuples of nodes, the valid selections for two marbles
+
+        :return: a set of tuples of Nodes, the valid selections for two marbles
         """
-        curr_player_marbles = self.state_rep.get_all_marbles_for_player(self.state_rep.player)
+        curr_player_marbles = self.state.get_all_nodes_for_player(self.state.player)
         return [(marble1, marble2) for marble1 in curr_player_marbles for marble2 in self.get_left_nodes(marble1)
                 if marble1.node_value == marble2.node_value]
 
     def process_two_marble_move(self, move):
+        """
+        Determines the type and change matrix (if applicable) of
+        the given two-marble move.
+
+        :param move: a Move object
+        :return: a Move object
+        """
         moved_start_node = self.get_node_in_direction_of_node(move.start_node,
                                                               move.direction)  # location of start node after move
         moved_end_node = self.get_node_in_direction_of_node(move.end_node,
@@ -89,32 +114,32 @@ class StateSpaceGenerator:
             if first_pushed_node.node_value == NodeValue.INVALID:  # edge of board
                 return Move(MoveType.Invalid, move.start_node, move.end_node, move.direction)
             if first_pushed_node.node_value == NodeValue.EMPTY:
-                change_matrix = self.generate_change_matrix_from_nodes(self.state_rep.player,
-                                                                       [move.start_node, move.end_node],
-                                                                       [moved_start_node, moved_end_node])
+                change_matrix = ChangeMatrix(self.state.player,
+                                             [move.start_node, move.end_node],
+                                             [moved_start_node, moved_end_node])
                 return Move(MoveType.Inline, move.start_node, move.end_node, move.direction, change_matrix)
             # if node being pushed is opposite colour
             if first_pushed_node.node_value.value == abs(3 - move.start_node.node_value.value):
                 node_behind_pushed_node = self.get_node_in_direction_of_node(first_pushed_node, move.direction)
                 # if node behind pushed node is empty or off the board
                 if node_behind_pushed_node.node_value == NodeValue.INVALID:
-                    change_matrix = self.generate_change_matrix_from_nodes(self.state_rep.player,
-                                                                           [move.start_node, move.end_node],
-                                                                           [moved_start_node, moved_end_node])
+                    change_matrix = ChangeMatrix(self.state.player,
+                                                 [move.start_node, move.end_node],
+                                                 [moved_start_node, moved_end_node])
                     return Move(MoveType.Scoring, move.start_node, move.end_node, move.direction, change_matrix)
                 if node_behind_pushed_node.node_value == NodeValue.EMPTY:
-                    change_matrix = self.generate_change_matrix_from_nodes(self.state_rep.player,
-                                                                           [move.start_node, move.end_node],
-                                                                           [moved_start_node, moved_end_node],
-                                                                           [node_behind_pushed_node])
+                    change_matrix = ChangeMatrix(self.state.player,
+                                                 [move.start_node, move.end_node],
+                                                 [moved_start_node, moved_end_node],
+                                                 [node_behind_pushed_node])
                     return Move(MoveType.Push, move.start_node, move.end_node, move.direction, change_matrix)
         # sidestep move
         else:
             if (moved_start_node.node_value == NodeValue.EMPTY) \
                     and (moved_end_node.node_value == NodeValue.EMPTY):
-                change_matrix = self.generate_change_matrix_from_nodes(self.state_rep.player,
-                                                                       [move.start_node, move.end_node],
-                                                                       [moved_start_node, moved_end_node])
+                change_matrix = ChangeMatrix(self.state.player,
+                                             [move.start_node, move.end_node],
+                                             [moved_start_node, moved_end_node])
                 return Move(MoveType.Sidestep, move.start_node, move.end_node, move.direction, change_matrix)
         return Move(MoveType.Invalid, move.start_node, move.end_node, move.direction)
 
@@ -122,10 +147,11 @@ class StateSpaceGenerator:
         """
         Returns a set of tuples of nodes (Node1, Node2) for all valid 3 marble selections
         for the current player.
+
         :return: a set of tuples of nodes, the valid selections for three marbles
         """
         valid_marble_selections = []
-        curr_player_marbles = self.state_rep.get_all_marbles_for_player(self.state_rep.player)
+        curr_player_marbles = self.state.get_all_nodes_for_player(self.state.player)
         for marble1 in curr_player_marbles:
             for direction in Direction.left_directions():
                 marble2 = self.get_node_in_direction_of_node(marble1, direction)
@@ -136,11 +162,17 @@ class StateSpaceGenerator:
         return valid_marble_selections
 
     def process_three_marble_move(self, move):
+        """
+        Determines the type and change matrix (if applicable) of
+        the given three-marble move.
+
+        :param move: a Move object
+        :return: a Move object
+        """
         moved_start_node = self.get_node_in_direction_of_node(move.start_node,
                                                               move.direction)  # location of start node after move
         moved_end_node = self.get_node_in_direction_of_node(move.end_node,
                                                             move.direction)  # location of end node after move
-
         middle_node = None
         for direction in Direction:
             if self.get_node_in_opposite_direction_of_node(move.end_node, direction) \
@@ -157,8 +189,8 @@ class StateSpaceGenerator:
             if first_pushed_node.node_value == NodeValue.INVALID:  # edge of board
                 return Move(MoveType.Invalid, move.start_node, move.end_node, move.direction)
             if first_pushed_node.node_value == NodeValue.EMPTY:
-                change_matrix = self.generate_change_matrix_from_nodes(
-                    self.state_rep.player,
+                change_matrix = ChangeMatrix(
+                    self.state.player,
                     [move.start_node, middle_node, move.end_node],
                     [moved_start_node, result_middle_node, moved_end_node])
                 return Move(MoveType.Inline, move.start_node, move.end_node, move.direction, change_matrix)
@@ -168,14 +200,14 @@ class StateSpaceGenerator:
                 second_pushed_node = self.get_node_in_direction_of_node(first_pushed_node, move.direction)
                 # if second_pushed_node is off the board or an empty space (3 pushing 1)
                 if second_pushed_node.node_value == NodeValue.INVALID:
-                    change_matrix = self.generate_change_matrix_from_nodes(
-                        self.state_rep.player,
+                    change_matrix = ChangeMatrix(
+                        self.state.player,
                         [move.start_node, middle_node, move.end_node],
                         [moved_start_node, result_middle_node, moved_end_node])
                     return Move(MoveType.Scoring, move.start_node, move.end_node, move.direction, change_matrix)
                 if second_pushed_node.node_value == NodeValue.EMPTY:
-                    change_matrix = self.generate_change_matrix_from_nodes(
-                        self.state_rep.player,
+                    change_matrix = ChangeMatrix(
+                        self.state.player,
                         [move.start_node, middle_node, move.end_node],
                         [moved_start_node, result_middle_node, moved_end_node],
                         [second_pushed_node])
@@ -186,15 +218,15 @@ class StateSpaceGenerator:
                                                                                         move.direction)
                     # and if the node behind second_pushed_node is off the board or an empty space (3 pushing 2)
                     if node_behind_second_pushed_node.node_value == NodeValue.INVALID:
-                        change_matrix = self.generate_change_matrix_from_nodes(
-                            self.state_rep.player,
+                        change_matrix = ChangeMatrix(
+                            self.state.player,
                             [move.start_node, middle_node, move.end_node],
                             [moved_start_node, result_middle_node, moved_end_node],
                             [second_pushed_node])
                         return Move(MoveType.Scoring, move.start_node, move.end_node, move.direction, change_matrix)
                     if node_behind_second_pushed_node.node_value == NodeValue.EMPTY:
-                        change_matrix = self.generate_change_matrix_from_nodes(
-                            self.state_rep.player,
+                        change_matrix = ChangeMatrix(
+                            self.state.player,
                             [move.start_node, middle_node, move.end_node],
                             [moved_start_node, result_middle_node, moved_end_node],
                             [second_pushed_node, node_behind_second_pushed_node])
@@ -204,8 +236,8 @@ class StateSpaceGenerator:
             if (moved_start_node.node_value == NodeValue.EMPTY) & \
                     (moved_end_node.node_value == NodeValue.EMPTY) & \
                     (result_middle_node.node_value == NodeValue.EMPTY):
-                change_matrix = self.generate_change_matrix_from_nodes(
-                    self.state_rep.player,
+                change_matrix = ChangeMatrix(
+                    self.state.player,
                     [move.start_node, middle_node, move.end_node],
                     [moved_start_node, result_middle_node,
                      moved_end_node])
@@ -213,31 +245,47 @@ class StateSpaceGenerator:
         return Move(MoveType.Invalid, move.start_node, move.end_node, move.direction)
 
     def apply_move(self, move):
-        next_player = 2 if self.state_rep.player == 1 else 1
-        new_state_rep = StateRepresentation(next_player, deepcopy(self.state_rep.board))
+        next_player = 2 if self.state.player == 1 else 1
+        new_state = State(next_player, deepcopy(self.state.board))
         if move.move_type == MoveType.Scoring:
-            new_state_rep.scores[next_player - 1] += 1
-        for row in new_state_rep.board:
+            new_state.scores[next_player - 1] += 1
+        for row in new_state.board:
             for node in row:
-                if node.node_value.value:
-                    new_val = move.change_matrix[node.row][node.column]
+                if node.node_value.value:   # if not NodeValue.INVALID
+                    new_val = move.change_matrix.matrix[node.row][node.column]
                     if new_val.value:
-                        new_state_rep.board[node.row][node.column].node_value = new_val
-        return new_state_rep
+                        new_state.board[node.row][node.column].node_value = new_val
+        return new_state
 
     def get_node_in_direction_of_node(self, node, direction):
+        """
+        Returns the node adjacent to given node in the specified direction.
+
+        :param node: a Node object
+        :param direction: a Direction enum object
+        :return: a Node object
+        """
         result_row = node.row + direction.value[0][0]
         result_column = node.column + direction.value[0][1]
-        return self.state_rep.get_node(result_row, result_column)
+        return self.state.get_node(result_row, result_column)
 
     def get_node_in_opposite_direction_of_node(self, node, direction):
+        """
+        Returns the node adjacent to given node in the opposite direction
+        of specified.
+
+        :param node: a Node object
+        :param direction: a Direction enum object
+        :return: a Node object
+        """
         result_row = node.row - direction.value[0][0]
         result_column = node.column - direction.value[0][1]
-        return self.state_rep.get_node(result_row, result_column)
+        return self.state.get_node(result_row, result_column)
 
     def get_adjacent_nodes(self, node):
         """
         Returns a dictionary with the adjacent nodes in all 6 directions.
+
         :param node: a Node
         :return: dictionary of direction : adjacent nodes
         """
@@ -248,6 +296,7 @@ class StateSpaceGenerator:
         """
         Returns a set with the adjacent nodes in left directions (TL, L, BL).
         Used when generating selections of 2 marbles in a row.
+
         :param node: a Node
         :return: set of Nodes in the left directions
         """
@@ -255,9 +304,10 @@ class StateSpaceGenerator:
 
 
 if __name__ == "__main__":
-    import node_arrays
+    # run from this file for a quick test of the state space generator using a test layout
+    from layouts import layout_arrays
 
-    stateSpaceGen = StateSpaceGenerator(StateRepresentation.get_start_state_rep(node_arrays.PUSHABLE_START))
+    stateSpaceGen = StateSpaceGenerator(State.get_start_state(layout_arrays.PUSHABLE_TEST_START))
     print("One Marble Moves:\n",
           sorted(stateSpaceGen.generate_one_marble_moves(), key=lambda move: move.start_node.get_front_end_coords()))
     print("Two Marble Selections:\n",

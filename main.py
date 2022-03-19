@@ -1,4 +1,7 @@
-from graphical_user_interface import GUI
+"""
+This module drives the Abalone-AI program via GUI.
+"""
+from gui.graphical_user_interface import GUI
 
 
 def main():

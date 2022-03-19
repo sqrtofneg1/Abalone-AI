@@ -1,14 +1,22 @@
+"""
+This module houses the GUI class.
+"""
 import tkinter as tk
 
-from game import Game
-from settings import *
-import node_arrays
+from core.game import Game
+from gui.settings import *
+from layouts import layout_arrays
 
 
 class GUI:
     PLAYER_COLOR_DICT = {1: "black", 2: "white", 3: "grey"}
 
     def __init__(self, settings=Settings.default_settings()):
+        """
+        Initializes the GUI.
+
+        :param settings: a Settings object
+        """
         self.window = tk.Tk()
         self.window.title("Abalone AI")
 
@@ -43,12 +51,18 @@ class GUI:
         self.history_p2_total_time = None
         self.ai_next_move = None
         self.game = self.reset_game()
-        print(self.game.state_rep)
-        print(self.game.state_rep.get_marble_count(1))
+        print(self.game.state)
+        print(self.game.state.get_nodes_count_for_player(1))
         self.selected_nodes = set()
 
     @staticmethod
     def setup_moves_history(frame):
+        """
+        Sets up the move history section.
+
+        :param frame: the frame to draw this section in
+        :return: Label and Listbox objects created in this section
+        """
         pad_y = 5
         history_frame = tk.Frame(frame, relief=tk.RAISED, borderwidth=1, bg="brown")
         history_frame.grid(row=0, column=2, sticky="ns")
@@ -97,6 +111,12 @@ class GUI:
 
     @staticmethod
     def setup_options_frame(frame):
+        """
+        Sets up the options section.
+
+        :param frame: the frame to draw in
+        :return: None
+        """
         btn_pad_x = 25
         btn_pad_y = 5
         pad_y = 10
@@ -121,9 +141,14 @@ class GUI:
         :param end_marble: the last of the selected marbles
         :return: True if the selection is valid, False otherwise
         """
-        pass    # TODO: implementation
+        pass  # TODO: implementation
 
     def setup_top_frame(self):
+        """
+        Sets up the frame at the top of the main window.
+
+        :return: the game score and turn counter Labels
+        """
         top_frame = tk.Frame(self.window, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="tan")
         top_frame.grid(row=0, sticky="ew")
         top_frame.grid_columnconfigure(0, weight=1)
@@ -144,8 +169,15 @@ class GUI:
         return game_score, turn_counter
 
     def setup_game_board_and_nodes(self, frame, starting_setup=None):
+        """
+        Sets up the game board section.
+
+        :param frame: the frame to draw in
+        :param starting_setup: the starting layout of the game
+        :return: the game board Frame
+        """
         if starting_setup is None:
-            starting_setup = node_arrays.STARTING_LAYOUT
+            starting_setup = layout_arrays.STARTING_LAYOUT
         game_board = tk.Frame(frame, relief=tk.RAISED, borderwidth=1, padx=3, pady=3, bg="#7F694C")
         game_board.grid(row=0, column=0)
 
@@ -166,7 +198,12 @@ class GUI:
         return game_board
 
     def setup_ai_next_move(self, frame):
+        """
+        Sets up the section displaying the AI's next move.
 
+        :param frame: the frame to draw in
+        :return: None
+        """
         ai_next_move_frame = tk.Frame(frame, relief=tk.RAISED, borderwidth=1, bg="#d5a976")
         ai_next_move_frame.grid(row=0, column=0, sticky="ew")
 
@@ -177,6 +214,12 @@ class GUI:
         self.ai_next_move.grid(row=1, column=0, sticky="ew")
 
     def setup_directional_arrows(self, frame):
+        """
+        Sets up the arrow buttons for directional moves.
+
+        :param frame: the frame to draw in
+        :return: None
+        """
         arrows_frame = tk.Frame(frame, relief=tk.RAISED, borderwidth=1)
         arrows_frame.grid(row=1, column=0, sticky="n", pady=10)
 
@@ -208,8 +251,12 @@ class GUI:
         clear_selection.grid(row=1, column=2, columnspan=2, sticky="nsew")
 
     def new_game_settings(self):  # might have to mess with `self.` to get values to be returned.
-        self.settings_window = tk.Toplevel(self.window)
+        """
+        Sets up the settings window.
 
+        :return: None
+        """
+        self.settings_window = tk.Toplevel(self.window)
         pad = 5
 
         layout_frame = tk.Frame(self.settings_window, relief=tk.GROOVE, borderwidth=1, padx=pad, pady=pad)
@@ -278,26 +325,44 @@ class GUI:
         ok_button.grid(row=5, column=0, sticky="ew")
 
     def set_and_get_settings(self):
+        """
+        Sets the game's settings based on user choices made in the settings window.
+
+        :return: None
+        """
         self.settings = Settings(self.layout_var.get(), self.colour_var.get(), self.gamemode_var.get(),
                                  self.move_limit_var.get(), self.time_limit_p1_var.get(), self.time_limit_p2_var.get())
         self.settings_window.destroy()
         self.reset_game()
 
     def reset_game(self):
+        """
+        Resets the game to the beginning.
+
+        :return:
+        """
         # Top frame: Player Score, Turn Counter, Settings button
         self.game_score, self.turn_counter = self.setup_top_frame()
 
         # Game Board
         self.game_board = self.setup_game_board_and_nodes(self.center_frame,
-                                                          node_arrays.STARTING_LAYOUT[self.settings.layout])
+                                                          layout_arrays.STARTING_LAYOUT[self.settings.layout])
         # Moves History
         self.history_p1_move, self.history_p1_time, \
-        self.history_p2_move, self.history_p2_time, \
-        self.history_p1_total_time, self.history_p2_total_time = self.setup_moves_history(self.center_frame)
+            self.history_p2_move, self.history_p2_time, \
+            self.history_p1_total_time, self.history_p2_total_time = self.setup_moves_history(self.center_frame)
 
         return Game(self.settings)
 
     def node_selected(self, row, column):
+        """
+        Changes the node colors to indicate selection and adds
+        the node to the list of selected nodes.
+
+        :param row: an int
+        :param column: an int
+        :return: None
+        """
         button = self.nodes[row][column]
 
         if button not in self.selected_nodes:
@@ -311,13 +376,29 @@ class GUI:
         print(f"{button['text']} selected")
 
     def clear_selection(self):
+        """
+        Removes node selection coloring, and removes the node
+        from the list of selected nodes.
+
+        :return: None
+        """
         for button in self.selected_nodes:
             button.configure(relief=tk.RAISED)
             button.configure(fg="pink")
         self.selected_nodes.clear()
 
     def run_gui(self):
+        """
+        Starts rendering the main window.
+
+        :return: None
+        """
         self.window.mainloop()
 
     def close_gui(self):
+        """
+        Stops rendering the main window.
+
+        :return: None
+        """
         self.window.destroy()

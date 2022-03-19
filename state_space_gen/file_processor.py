@@ -1,25 +1,39 @@
-from node import NodeValue, Node
-from state_representation import StateRepresentation
-from state_space_generator import StateSpaceGenerator
+"""
+This module houses the FileProcessor class.
+"""
+from core.node import NodeValue, Node
+from core.state import State
+from state_space_gen.state_space_generator import StateSpaceGenerator
 
 
 class FileProcessor:
+    """
+    Responsible for taking input test files, converting the data into
+    a State, then taking the output of the State Space Generator to
+    write to output files.
+    """
 
     @staticmethod
-    def get_state_rep_from_file(file_name):
+    def get_state_from_file(file_name):
         """
-        Processes the given file and returns a StateRepresentation object.
+        Processes the given file and returns a State object.
+
+        :param file_name: a string of the file name
+        :return: a State object
         """
         lines = FileProcessor.read_lines_from_file(file_name)
         marble_list = FileProcessor.get_marble_list_from_lines(lines)
         curr_player, board = FileProcessor.get_player_and_board_from_marble_list(marble_list)
-        return StateRepresentation(FileProcessor.get_player_num_from_color(curr_player).value,
-                                   StateRepresentation.get_board_from_nodes(board))
+        return State(FileProcessor.get_player_num_from_color(curr_player).value,
+                     State.get_board_from_nodes(board))
 
     @staticmethod
     def read_lines_from_file(file_name):
         """
-        Returns an array of lines.
+        Reads and returns lines from the given file.
+
+        :param file_name: a string of the file name
+        :return: a list of strings read from file
         """
         lines = []
         with open(file_name, "r") as input_file:
@@ -30,18 +44,18 @@ class FileProcessor:
     @staticmethod
     def get_marble_list_from_lines(lines):
         """
-        Returns an array which has the user as the first index.
+        Returns a list with the current player as the first index,
+        followed by the marbles on the board.
+
+        :param lines: a list of strings read from file
+        :return: a list of strings
         """
         player = lines[0].replace("\n", "")
         board = lines[1].replace("\n", "").split(",")
-        return FileProcessor.flatten([player, board])
-
-    @staticmethod
-    def flatten(array):
         result = []
-        for item in array:
+        for item in [player, board]:
             if isinstance(item, list):
-                result.extend(FileProcessor.flatten(item))
+                result.extend(item)
             else:
                 result.append(item)
         return result
@@ -50,6 +64,9 @@ class FileProcessor:
     def get_player_num_from_color(color_char):
         """
         Returns the corresponding NodeValue of the given color char.
+
+        :param color_char: a character equal to 'b' or 'w'
+        :return: a NodeValue equal to BLACK or WHITE
         """
         return NodeValue.BLACK if color_char.lower() == "b" else NodeValue.WHITE
 
@@ -57,6 +74,9 @@ class FileProcessor:
     def get_player_and_board_from_marble_list(marble_list):
         """
         Returns a list consisting of Nodes representing marbles.
+
+        :param marble_list: a list of strings with current player at first index
+        :return: a tuple of the current player and a list of Nodes
         """
         curr_player = marble_list.pop(0)
         nodes_list = []
@@ -87,15 +107,15 @@ class FileProcessor:
         This method will create the Test<#>.board file.
 
         :param file_name: name of file to create
-        :param state_space: a set of StateRepresentation objects.
+        :param state_space: a set of State objects.
         """
         new_file_name = file_name.split(".")[0] + ".board"
         with open(f"test_outputs/{new_file_name}", "w+") as f:
             for state in state_space:
                 data = [
-                    str(FileProcessor.sort_marbles_for_player(state.get_all_marbles_for_player(NodeValue.BLACK.value)))
+                    str(FileProcessor.sort_marbles_for_player(state.get_all_nodes_for_player(NodeValue.BLACK.value)))
                         .replace("[", "").replace("]", "").replace(" ", "").replace("[", "").replace("]", ""),
-                    str(FileProcessor.sort_marbles_for_player(state.get_all_marbles_for_player(NodeValue.WHITE.value)))
+                    str(FileProcessor.sort_marbles_for_player(state.get_all_nodes_for_player(NodeValue.WHITE.value)))
                         .replace("[", "").replace("]", "").replace(" ", "").replace("[", "").replace("]", "")
                 ]
                 data_string_version = str(data).replace("[", "").replace("]", "").replace(" ", "").replace("'", "") \
@@ -104,12 +124,18 @@ class FileProcessor:
 
     @staticmethod
     def sort_marbles_for_player(marbles_for_player):
+        """
+        Returns a sorted list of marbles.
+
+        :param marbles_for_player: a list of marbles for one player
+        :return: a sorted list of marbles
+        """
         return sorted(marbles_for_player, key=lambda node: (-node.row, node.column))
 
 
 if __name__ == "__main__":
-    state_rep = FileProcessor.get_state_rep_from_file("test_inputs/Test1.input")
-    state_space_gen = StateSpaceGenerator(state_rep)
+    start_state = FileProcessor.get_state_from_file("../dist/test_inputs/Test1.input")
+    state_space_gen = StateSpaceGenerator(start_state)
 
     valid_moves_list = state_space_gen.generate_all_valid_moves()
     for valid_move in valid_moves_list:
