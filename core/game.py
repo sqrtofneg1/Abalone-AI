@@ -19,8 +19,20 @@ class Game:
         :param settings: a Settings object
         """
         self.settings = settings
-        self.state = State.get_start_state(layout_arrays.STARTING_LAYOUT[settings.layout])
-        self.last_state = self.state  # Used for undo later?
+        self.state_rep = State.get_start_state(layout_arrays.STARTING_LAYOUT[settings.layout])
+        self.last_state_rep = self.state_rep  # Used for undo later?
+        self.turn_counter = 1
 
     def start_game(self):
         pass
+
+    def apply_move(self, move):
+        """
+        Applies the given move and progresses the states.
+
+        :param move: a Move object
+        :return: None
+        """
+        self.last_state_rep = self.state_rep
+        self.state_rep = self.state_rep.apply_move(move)
+        self.turn_counter += 1

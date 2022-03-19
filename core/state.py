@@ -1,6 +1,9 @@
 """
 This module houses the State class.
 """
+from copy import deepcopy
+
+from core.move import MoveType
 from core.node import Node, NodeValue
 from layouts import layout_arrays
 
@@ -130,3 +133,48 @@ class State:
         :return: an int
         """
         return len(self.get_all_nodes_for_player(player))
+
+    def get_node_in_direction_of_node(self, node, direction):
+        """
+        Returns the node adjacent to given node in the specified direction.
+
+        :param node: a Node object
+        :param direction: a Direction enum object
+        :return: a Node object
+        """
+        result_row = node.row + direction.value[0][0]
+        result_column = node.column + direction.value[0][1]
+        return self.get_node(result_row, result_column)
+
+    def get_node_in_opposite_direction_of_node(self, node, direction):
+        """
+        Returns the node adjacent to given node in the opposite direction
+        of specified.
+
+        :param node: a Node object
+        :param direction: a Direction enum object
+        :return: a Node object
+        """
+        result_row = node.row - direction.value[0][0]
+        result_column = node.column - direction.value[0][1]
+        return self.get_node(result_row, result_column)
+
+    def apply_move(self, move):
+        """
+        Applies the given move to this state to produce the resulting state.
+
+        :param move: a Move object
+        :return: a new State object
+        """
+        next_player = 2 if self.player == 1 else 1
+        new_state = State(next_player, deepcopy(self.board))
+        if move.move_type == MoveType.Scoring:
+            new_state.scores[next_player - 1] += 1
+        for row in new_state.board:
+            for node in row:
+                if node.node_value.value:  # if not NodeValue.INVALID
+                    new_val = move.change_matrix.matrix[node.row][node.column]
+                    if new_val.value:
+                        new_state.board[node.row][node.column].node_value = new_val
+        return new_state
+
