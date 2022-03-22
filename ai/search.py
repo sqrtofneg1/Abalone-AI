@@ -1,5 +1,5 @@
 """
-This module houses the adversarial search implementations
+This module houses the adversarial search algorithm implementation
 for Abalone AI - Minimax and Alpha-Beta pruning.
 """
 from random import Random
@@ -10,7 +10,8 @@ from state_space_gen.state_space_generator import StateSpaceGenerator
 
 class MinimaxAlphaBeta:
     """
-    Represents a search algorithm using Minimax with Alpha-Beta pruning.
+    Represents an adversarial search algorithm
+    using Minimax with Alpha-Beta pruning.
     """
 
     def __init__(self, max_depth=2):
@@ -37,7 +38,10 @@ class MinimaxAlphaBeta:
         max_value = max(min_values_dict.keys())
         max_valued_state = min_values_dict[max_value]
         max_valued_move = moves[next_states.index(max_valued_state)]
-        print(f"Max value: {max_value}\nMove: {max_valued_move}\nMax Result State:{max_valued_state}")
+
+        # TEST: print results
+        print(f"Max value: {max_value}\nMove: {max_valued_move}"
+              f"\nMax Result State:{max_valued_state}")
 
         return max_valued_move
 
@@ -49,7 +53,7 @@ class MinimaxAlphaBeta:
         :param state_depth: a tuple with a State and an int for depth
         :return: an int of the highest value obtainable from next states
         """
-        if self.is_terminal(state_depth[1]):
+        if self.is_terminal(state_depth):
             return self.get_value(state_depth[0])
 
         value = float('-inf')
@@ -70,7 +74,7 @@ class MinimaxAlphaBeta:
         :param state_depth: a tuple with a State and an int for depth
         :return: an int of the lowest value obtainable from next states
         """
-        if self.is_terminal(state_depth[1]):
+        if self.is_terminal(state_depth):
             return self.get_value(state_depth)
 
         value = float('inf')
@@ -83,16 +87,28 @@ class MinimaxAlphaBeta:
 
         return value
 
-    def is_terminal(self, depth):
-        return depth == self._max_depth
+    def is_terminal(self, state_depth):
+        """
+        Checks if this state is considered terminal (at max depth).
+
+        :param state_depth: a tuple with a State and an int for depth
+        :return: True if state is at max depth, otherwise False
+        """
+        return state_depth[1] == self._max_depth
 
     def get_value(self, state_depth):
+        """
+        Returns the estimated value of this state according to heuristic functions.
+
+        :param state_depth: a tuple with a State and an int for depth
+        :return: an int of the value of this state
+        """
         # return heuristic-evaluated value of this state
-        return Random.randint(Random(), 1, 100)     # placeholder: randomize a value
+        return Random.randint(Random(), 1, 100)     # PLACEHOLDER: randomize a value
 
 
 if __name__ == "__main__":
-    # testing
+    # TEST: run algo with test input file
     search_algo = MinimaxAlphaBeta()
     search_algo.minimax_decision(
         FileProcessor.get_state_from_file("../dist/test_inputs/Test1.input"))
