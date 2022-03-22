@@ -20,6 +20,7 @@ class StateSpaceGenerator:
         :param state: a State object
         """
         self._state = state
+        self._valid_moves = None
 
     @property
     def state(self):
@@ -30,15 +31,41 @@ class StateSpaceGenerator:
         """
         return self._state
 
+    @state.setter
+    def state(self, new_state):
+        """
+        Sets the current state to a new one.
+
+        :param new_state: a new State object
+        """
+        self._state = new_state
+
+    @property
+    def valid_moves(self):
+        """
+        Returns the list of legal next moves.
+
+        :return: a list of Moves
+        """
+        return self._valid_moves
+
+    @valid_moves.setter
+    def valid_moves(self, new_moves):
+        """
+        Sets the list of legal next moves to a new list.
+
+        :param new_moves: a new list of Moves
+        """
+        self._valid_moves = new_moves
+
     def generate_state_space(self):
         """
         Generates all legal resulting states from the starting state.
 
         :return: a list of States
         """
-        all_valid_moves = self.generate_all_valid_moves()
-        state_space = [self.state.apply_move(move) for move in all_valid_moves]
-        return state_space
+        self.valid_moves = self.generate_all_valid_moves()
+        return self.generate_next_states()
 
     def generate_all_valid_moves(self):
         """
@@ -50,6 +77,15 @@ class StateSpaceGenerator:
         all_valid_moves.extend(self.generate_one_marble_moves())
         all_valid_moves.extend(self.generate_multi_marbles_moves())
         return all_valid_moves
+
+    def generate_next_states(self):
+        """
+        Generates a list of next states by applying all the generated legal
+        next moves to the current state.
+
+        :return: a list of States
+        """
+        return [self.state.apply_move(move) for move in self.valid_moves]
 
     def generate_one_marble_moves(self):
         """
