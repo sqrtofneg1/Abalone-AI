@@ -21,7 +21,7 @@ class MinimaxAlphaBeta:
         :param max_depth: an int of
         """
         self._max_depth = max_depth
-        self._cache = {}    # transposition table
+        self._cache = {}  # transposition table
 
     @property
     def max_depth(self):
@@ -50,6 +50,18 @@ class MinimaxAlphaBeta:
         """
         return self._cache
 
+    @staticmethod
+    def sort_moves(moves):
+        """
+        Sorts the moves by their move type, in descending order to
+        improve pruning.
+
+        :param moves: a list of Move objects
+        :return: a list of Move objects
+        """
+        moves.sort(key=lambda move: move.move_type.value, reverse=True)
+        return moves
+
     def minimax_decision(self, state):
         """
         Returns the estimated-best-next-move the player can make using
@@ -61,6 +73,7 @@ class MinimaxAlphaBeta:
         state_depth = state, 0
         generator = StateSpaceGenerator(state_depth[0])
         moves = generator.generate_all_valid_moves()
+        moves = self.sort_moves(moves)
         next_states = generator.generate_next_states()
         min_values_dict = {}
 
@@ -72,9 +85,9 @@ class MinimaxAlphaBeta:
         max_valued_state = min_values_dict[max_value]
         max_valued_move = moves[next_states.index(max_valued_state)]
 
-        # TEST: print results
-        print(f"Max value: {max_value}\nMove: {max_valued_move}"
-              f"\nMax Result State:{max_valued_state}")
+        # TEST: log results to console
+        logging.info(f"Max value: {max_value}\nMove: {max_valued_move}"
+                     f"\nMax Result State:{max_valued_state}")
 
         return max_valued_move
 
@@ -137,19 +150,23 @@ class MinimaxAlphaBeta:
         :return: an int of the value of this state
         """
         if state in self.cache:
-            return self.cache[state]    # avoids recalculating previously seen states
+            return self.cache[state]  # avoids recalculating previously seen states
         # return heuristic-evaluated value of this state
-        value = Random.randint(Random(), 1, 100)    # PLACEHOLDER: randomize a value
+        value = Random.randint(Random(), 1, 100)  # PLACEHOLDER: randomize a value
         self.cache.update({state: value})
         return value
 
 
 if __name__ == "__main__":
     from time import perf_counter
+    from sys import stdout
+    import logging
+
     # TEST: run algo with test input file
+    logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler(stdout)])
     search_algo = MinimaxAlphaBeta()
     start = perf_counter()  # TEST: start timer
     search_algo.minimax_decision(
         FileProcessor.get_state_from_file("../dist/test_inputs/Test1.input"))
     end = perf_counter()  # TEST: end timer
-    print(f"Time taken: {end - start}")
+    logging.info(f"Time taken: {end - start}")
