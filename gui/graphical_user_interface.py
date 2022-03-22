@@ -400,18 +400,18 @@ class GUI:
             text = button['text']
             row = int(Node.get_row_from_alpha(text[0]))
             col = int(text[1])
-            nodes.append(self.game.state_rep.get_node(row, col))
+            nodes.append(self.game.state.get_node(row, col))
         for node in nodes:
-            if node.node_value.value is not self.game.state_rep.player:
+            if node.node_value.value is not self.game.state.player:
                 return None
 
         if selection_size == 1:
             for node in nodes:
                 result_row = node.row + direction.value[0][0]
                 result_column = node.column + direction.value[0][1]
-                adj_node = self.game.state_rep.get_node(result_row, result_column)
+                adj_node = self.game.state.get_node(result_row, result_column)
                 if adj_node.node_value == NodeValue.EMPTY:
-                    change_matrix = ChangeMatrix(self.game.state_rep.player,
+                    change_matrix = ChangeMatrix(self.game.state.player,
                                                  [node], [adj_node])
                     return Move(MoveType.Inline, node, node, direction, change_matrix)
         else:
@@ -419,7 +419,7 @@ class GUI:
             for node1 in nodes:
                 for node2 in nodes:
                     # now we have 2 or 3 nodes that are all current player's marbles
-                    adj_nodes = [(direct, self.game.state_rep.get_node_in_direction_of_node(node1, direct))
+                    adj_nodes = [(direct, self.game.state.get_node_in_direction_of_node(node1, direct))
                                  for direct in Direction]
                     for adj_node in adj_nodes:
                         if node2 == adj_node[1]:
@@ -430,10 +430,10 @@ class GUI:
                 start_and_end_nodes = []
                 for direction_between in directions_between_nodes:
                     for node in nodes:
-                        if self.game.state_rep.get_node_in_direction_of_node(node, direction_between) not in nodes:
+                        if self.game.state.get_node_in_direction_of_node(node, direction_between) not in nodes:
                             start_and_end_nodes.append(node)
 
-                generator = StateSpaceGenerator(self.game.state_rep)
+                generator = StateSpaceGenerator(self.game.state)
                 if selection_size == 2:
                     move = generator.process_two_marble_move(Move(MoveType.Unknown, start_and_end_nodes[0],
                                                                   start_and_end_nodes[1], direction))
@@ -455,7 +455,7 @@ class GUI:
         move = self.get_move_from_gui(direction)
         self.clear_selection()
         if move:
-            if self.game.state_rep.player == 1:
+            if self.game.state.player == 1:
                 self.history_p1_move.insert(tk.END, repr(move))
             else:
                 self.history_p2_move.insert(tk.END, repr(move))
@@ -479,7 +479,7 @@ class GUI:
         :return: None
         """
         self.game_score['text'] = \
-            f"Player 1: {self.game.state_rep.scores[0]} \t Player 2: {self.game.state_rep.scores[1]}"
+            f"Player 1: {self.game.state.scores[0]} \t Player 2: {self.game.state.scores[1]}"
 
     def update_nodes(self):
         """
@@ -489,7 +489,7 @@ class GUI:
         """
         for row in range(11):
             for column in range(11):
-                node = self.game.state_rep.get_node(row, column)
+                node = self.game.state.get_node(row, column)
                 if node.node_value is not NodeValue.INVALID:
                     self.nodes[row][column].configure(bg=self.PLAYER_COLOR_DICT[node.node_value.value])
 
