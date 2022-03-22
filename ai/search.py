@@ -15,7 +15,40 @@ class MinimaxAlphaBeta:
     """
 
     def __init__(self, max_depth=2):
+        """
+        Initializes an object of this class.
+
+        :param max_depth: an int of
+        """
         self._max_depth = max_depth
+        self._cache = {}    # transposition table
+
+    @property
+    def max_depth(self):
+        """
+        Returns the max depth of this search algorithm.
+
+        :return: an int
+        """
+        return self._max_depth
+
+    @max_depth.setter
+    def max_depth(self, new_max):
+        """
+        Sets the max depth to a new number.
+
+        :param new_max: an int
+        """
+        self._max_depth = new_max
+
+    @property
+    def cache(self):
+        """
+        Returns the transposition table (cache).
+
+        :return: a dictionary
+        """
+        return self._cache
 
     def minimax_decision(self, state):
         """
@@ -75,7 +108,7 @@ class MinimaxAlphaBeta:
         :return: an int of the lowest value obtainable from next states
         """
         if self.is_terminal(state_depth):
-            return self.get_value(state_depth)
+            return self.get_value(state_depth[0])
 
         value = float('inf')
         generator = StateSpaceGenerator(state_depth[0])
@@ -96,19 +129,27 @@ class MinimaxAlphaBeta:
         """
         return state_depth[1] == self._max_depth
 
-    def get_value(self, state_depth):
+    def get_value(self, state):
         """
         Returns the estimated value of this state according to heuristic functions.
 
-        :param state_depth: a tuple with a State and an int for depth
+        :param state: a State object
         :return: an int of the value of this state
         """
+        if state in self.cache:
+            return self.cache[state]    # avoids recalculating previously seen states
         # return heuristic-evaluated value of this state
-        return Random.randint(Random(), 1, 100)     # PLACEHOLDER: randomize a value
+        value = Random.randint(Random(), 1, 100)    # PLACEHOLDER: randomize a value
+        self.cache.update({state: value})
+        return value
 
 
 if __name__ == "__main__":
+    from time import perf_counter
     # TEST: run algo with test input file
     search_algo = MinimaxAlphaBeta()
+    start = perf_counter()  # TEST: start timer
     search_algo.minimax_decision(
         FileProcessor.get_state_from_file("../dist/test_inputs/Test1.input"))
+    end = perf_counter()  # TEST: end timer
+    print(f"Time taken: {end - start}")
