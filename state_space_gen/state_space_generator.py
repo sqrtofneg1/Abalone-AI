@@ -20,7 +20,8 @@ class StateSpaceGenerator:
         :param state: a State object
         """
         self._state = state
-        self._valid_moves = None
+        self._valid_moves = []
+        self._next_states = []
 
     @property
     def state(self):
@@ -58,13 +59,31 @@ class StateSpaceGenerator:
         """
         self._valid_moves = new_moves
 
+    @property
+    def next_states(self):
+        """
+        Returns the list of next states.
+
+        :return: a list of States
+        """
+        return self._next_states
+
+    @next_states.setter
+    def next_states(self, new_states):
+        """
+        Sets the list of next states to a new list.
+
+        :param new_states: a new list of States
+        """
+        self._next_states = new_states
+
     def generate_state_space(self):
         """
         Generates all legal resulting states from the starting state.
 
         :return: a list of States
         """
-        self.valid_moves = self.generate_all_valid_moves()
+        self.generate_all_valid_moves()
         return self.generate_next_states()
 
     def generate_all_valid_moves(self):
@@ -73,10 +92,10 @@ class StateSpaceGenerator:
 
         :return: a list of Moves
         """
-        all_valid_moves = []
-        all_valid_moves.extend(self.generate_one_marble_moves())
-        all_valid_moves.extend(self.generate_multi_marbles_moves())
-        return all_valid_moves
+        self.valid_moves.clear()
+        self.valid_moves.extend(self.generate_one_marble_moves())
+        self.valid_moves.extend(self.generate_multi_marbles_moves())
+        return self.valid_moves
 
     def generate_next_states(self):
         """
@@ -85,7 +104,9 @@ class StateSpaceGenerator:
 
         :return: a list of States
         """
-        return [self.state.apply_move(move) for move in self.valid_moves]
+        self.next_states.clear()
+        self.next_states = [self.state.apply_move(move) for move in self.valid_moves]
+        return self.next_states
 
     def generate_one_marble_moves(self):
         """
