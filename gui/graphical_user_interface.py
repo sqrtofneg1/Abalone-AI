@@ -286,14 +286,14 @@ class GUI:
         gamemode_frame = tk.Frame(self.settings_window, relief=tk.GROOVE, borderwidth=1, padx=pad, pady=pad)
         self.gamemode_var = tk.IntVar()
         gamemode_radio_human_ai = tk.Radiobutton(gamemode_frame, text="Human vs AI", variable=self.gamemode_var,
-                                                 value=Gamemode.HUMAN_HUMAN.value)
+                                                 value=GameMode.HUMAN_HUMAN.value)
         gamemode_radio_human_ai.grid(row=0, column=0, sticky="w")
         gamemode_radio_human_ai.select()
         gamemode_radio_human_human = tk.Radiobutton(gamemode_frame, text="Human vs Human", variable=self.gamemode_var,
-                                                    value=Gamemode.HUMAN_AI.value)
+                                                    value=GameMode.HUMAN_AI.value)
         gamemode_radio_human_human.grid(row=1, column=0, sticky="w")
         gamemode_radio_ai_ai = tk.Radiobutton(gamemode_frame, text="AI vs AI", variable=self.gamemode_var,
-                                              value=Gamemode.AI_AI.value)
+                                              value=GameMode.AI_AI.value)
         gamemode_radio_ai_ai.grid(row=2, column=0, sticky="w")
         gamemode_frame.grid(row=2, column=0, sticky="ew")
 

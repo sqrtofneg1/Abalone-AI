@@ -95,7 +95,7 @@ class StateSpaceGenerator:
         self.valid_moves.clear()
         self.valid_moves.extend(self.generate_multi_marbles_moves())
         self.valid_moves.extend(self.generate_one_marble_moves())
-        return self.valid_moves
+        return self.sort_moves()
 
     def generate_next_states(self):
         """
@@ -331,6 +331,16 @@ class StateSpaceGenerator:
         """
         return {self.state.get_node_in_direction_of_node(node, direction) for direction in
                 Direction.left_directions()}
+
+    def sort_moves(self):
+        """
+        Sorts the valid moves by their move type, in descending order to
+        improve pruning.
+
+        :return: a list of Move objects
+        """
+        self.valid_moves.sort(key=lambda move: move.move_type.value[0], reverse=True)
+        return self.valid_moves
 
 
 if __name__ == "__main__":

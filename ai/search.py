@@ -50,18 +50,6 @@ class MinimaxAlphaBeta:
         """
         return self._cache
 
-    @staticmethod
-    def sort_moves(moves):
-        """
-        Sorts the moves by their move type, in descending order to
-        improve pruning.
-
-        :param moves: a list of Move objects
-        :return: a list of Move objects
-        """
-        moves.sort(key=lambda move: move.move_type.value, reverse=True)
-        return moves
-
     def minimax_decision(self, state):
         """
         Returns the estimated-best-next-move the player can make using
@@ -73,23 +61,23 @@ class MinimaxAlphaBeta:
         state_depth = state, 0
         generator = StateSpaceGenerator(state_depth[0])
         moves = generator.generate_all_valid_moves()
-        moves = self.sort_moves(moves)
         next_states = generator.generate_next_states()
-        min_values_dict = {}
+        next_states_values_dict = {}
 
         for next_state in next_states:
             next_state_depth = next_state, state_depth[1] + 1
-            min_values_dict.update({self.min_value(next_state_depth): next_state})
+            next_states_values_dict.update({next_state: self.min_value(next_state_depth)})
 
-        max_value = max(min_values_dict.keys())
-        max_valued_state = min_values_dict[max_value]
-        max_valued_move = moves[next_states.index(max_valued_state)]
+        max_value = max(next_states_values_dict.values())
+        max_valued_states = [s for s, v in next_states_values_dict.items() if v == max_value]
+        chosen_state = max_valued_states[Random.randint(Random(), 0, len(max_valued_states) - 1)]
+        chosen_move = moves[next_states.index(chosen_state)]
 
         # TEST: log results to console
-        logging.info(f"Max value: {max_value}\nMove: {max_valued_move}"
-                     f"\nMax Result State:{max_valued_state}")
+        logging.info(f"Max value: {max_value}\nMove: {chosen_move}"
+                     f"\nMax Result State:{chosen_state}")
 
-        return max_valued_move
+        return chosen_move
 
     def max_value(self, state_depth):
         """
