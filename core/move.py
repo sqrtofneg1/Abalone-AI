@@ -1,7 +1,7 @@
 """
 This module houses the Move and ChangeMatrix classes.
 """
-from enum import Enum, auto
+from enum import Enum
 
 import sys,os
 sys.path.append(os.path.realpath('..'))
@@ -176,3 +176,7 @@ class Direction(Enum):
         :return: a set of Direction enum objects
         """
         return {Direction.L, Direction.TL, Direction.BL}
+
+
+if __name__ == "__main__":
+    print(f"{MoveType.Inline.value[0]._generate}")

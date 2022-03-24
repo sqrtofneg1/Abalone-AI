@@ -26,7 +26,7 @@ class Colour(Enum):
     WHITE = auto()
 
 
-class Gamemode(Enum):
+class GameMode(Enum):
     HUMAN_HUMAN = auto()
     HUMAN_AI = auto()
     AI_AI = auto()

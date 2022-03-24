@@ -105,8 +105,9 @@ class StateSpaceGenerator:
         :return: a list of Moves
         """
         self.valid_moves.clear()
-        self.valid_moves.extend(self.generate_one_marble_moves())
         self.valid_moves.extend(self.generate_multi_marbles_moves())
+        self.valid_moves.extend(self.generate_one_marble_moves())
+        self.valid_moves = self.sort_moves(self.valid_moves)
         return self.valid_moves
 
     def generate_next_states(self):

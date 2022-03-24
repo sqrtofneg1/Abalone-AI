@@ -44,6 +44,16 @@ class State:
                f"P1 score: {self.scores[0]} --- P2 Score: {self.scores[1]}\n{node_str}"
 
     @staticmethod
+    def get_other_player_num(player):
+        """
+        Returns the opposing player's numerical value.
+
+        :param player: an int
+        :return: an int
+        """
+        return 2 if player == 1 else 1
+
+    @staticmethod
     def get_start_state(start_layout):
         """
         Returns the State object for the start of the game corresponding
@@ -170,8 +180,8 @@ class State:
         :param move: a Move object
         :return: a new State object
         """
-        next_player = 2 if self.player == 1 else 1
-        new_state = State(next_player, deepcopy(self.board))
+        next_player = self.get_other_player_num(self.player)
+        new_state = State(next_player, self.copy_current_board())
         if move.move_type == MoveType.Scoring:
             new_state.scores[next_player - 1] += 1
         for row in new_state.board:
@@ -182,3 +192,15 @@ class State:
                         new_state.board[node.row][node.column].node_value = new_val
         return new_state
 
+    def copy_current_board(self):
+        """
+        Returns a deep copy of the current board.
+
+        :return: a 2d array of Nodes
+        """
+        new_board = [[None for col in range(11)] for row in range(11)]
+        for row in range(11):
+            for col in range(11):
+                current_node = self.board[row][col]
+                new_board[row][col] = Node(current_node.node_value, current_node.row, current_node.column)
+        return new_board

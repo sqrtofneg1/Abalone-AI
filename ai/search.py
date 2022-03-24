@@ -2,6 +2,7 @@
 This module houses the adversarial search algorithm implementation
 for Abalone AI - Minimax and Alpha-Beta pruning.
 """
+import math
 from random import Random
 
 import sys,os
@@ -36,6 +37,7 @@ class AlphaBeta:
         """
         return self._max_depth
 
+
     @max_depth.setter
     def max_depth(self, new_max):
         """
@@ -57,6 +59,7 @@ class AlphaBeta:
         Returns the estimated-best-next-move the player can make using
         alpha-beta search algorithm.
         :param state: a State object
+        :param max_depth: an int
         :return: a Move object
         """
         alpha, beta, value = float('-inf'), float('inf'), float('-inf')
@@ -81,18 +84,20 @@ class AlphaBeta:
         return chosen_move
 
     def max_value(self, state_depth, alpha, beta):
+
         """
         For the given state, returns the highest value obtainable from the next states,
         from the current player's perspective.
         :param state_depth: a tuple with a State and an int for depth
         :param alpha: an int of the highest value found by max so far
         :param beta: an int of the lowest value found by min so far
+        :param max_depth: an int
         :return: an int of the highest value obtainable from next states
         """
-        if self.is_terminal(state_depth):
+        if state_depth[1] == max_depth:
             return self.get_value(state_depth[0])
 
-        value = float('-inf')
+        value = -math.inf
         generator = StateSpaceGenerator(state_depth[0])
         moves = generator.generate_all_valid_moves()
         next_states = generator.generate_next_states()
@@ -119,7 +124,7 @@ class AlphaBeta:
         if self.is_terminal(state_depth):
             return self.get_value(state_depth[0])
 
-        value = float('inf')
+        value = math.inf
         generator = StateSpaceGenerator(state_depth[0])
         moves = generator.generate_all_valid_moves()
         next_states = generator.generate_next_states()
