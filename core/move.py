@@ -3,8 +3,6 @@ This module houses the Move and ChangeMatrix classes.
 """
 from enum import Enum
 
-import sys,os
-sys.path.append(os.path.realpath('..'))
 from core.node import NodeValue
 
 
@@ -154,7 +152,6 @@ class MoveType(Enum):
     # These 2 move types are only used in state generation
     Unknown = None, 'u'
     Invalid = 0, 'x'
-
 
 
 class Direction(Enum):

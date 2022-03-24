@@ -3,12 +3,8 @@ This module houses the State class.
 """
 from copy import deepcopy
 
-
-import sys,os
-sys.path.append(os.path.realpath('..'))
-
-from core.node import NodeValue, Node
 from core.move import MoveType
+from core.node import Node, NodeValue
 from layouts import layout_arrays
 
 

@@ -1,16 +1,10 @@
 """
 This module houses the FileProcessor class.
 """
-# from core.node import NodeValue, Node
-# from core.node import State
-# from state_space_gen.state_space_generator import StateSpaceGenerator
-
-
-import sys,os
-sys.path.append(os.path.realpath('..'))
 from core.node import NodeValue, Node
 from core.state import State
 from state_space_gen.state_space_generator import StateSpaceGenerator
+
 
 class FileProcessor:
     """

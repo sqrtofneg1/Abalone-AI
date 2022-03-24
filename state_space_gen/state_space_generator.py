@@ -2,8 +2,6 @@
 This module houses the StateSpaceGenerator class.
 """
 
-import sys,os
-sys.path.append(os.path.realpath('..'))
 from core.node import NodeValue
 from core.move import Move, Direction, MoveType, ChangeMatrix
 from core.state import State
@@ -84,6 +82,7 @@ class StateSpaceGenerator:
         """
         Sorts the valid moves by their move type, in descending order to
         improve pruning.
+
         :return: a list of Move objects
         """
         moves.sort(key=lambda move: move.move_type.value[0], reverse=True)

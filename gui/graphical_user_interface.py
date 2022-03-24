@@ -9,7 +9,6 @@ from state_space_gen.state_space_generator import StateSpaceGenerator
 from core.game import Game
 from gui.settings import *
 from layouts import layout_arrays
-from ai.search import AlphaBeta
 
 
 class GUI:
@@ -31,7 +30,7 @@ class GUI:
         self.settings_window = None
         self.layout_var = None
         self.colour_var = None
-        self.gamemode_var = Gamemode.HUMAN_AI.value
+        self.gamemode_var = None
         self.move_limit_var = None
         self.time_limit_p1_var = None
         self.time_limit_p2_var = None
@@ -60,9 +59,6 @@ class GUI:
         self.ai_next_move = None
         self.game = self.reset_game()
         self.selected_buttons = set()
-
-
-        self.alpha_beta = AlphaBeta(2)
 
     @staticmethod
     def setup_moves_history(frame):
@@ -290,11 +286,11 @@ class GUI:
         gamemode_frame = tk.Frame(self.settings_window, relief=tk.GROOVE, borderwidth=1, padx=pad, pady=pad)
         self.gamemode_var = tk.IntVar()
         gamemode_radio_human_ai = tk.Radiobutton(gamemode_frame, text="Human vs AI", variable=self.gamemode_var,
-                                                 value=Gamemode.HUMAN_AI.value)
+                                                 value=GameMode.HUMAN_HUMAN.value)
         gamemode_radio_human_ai.grid(row=0, column=0, sticky="w")
         gamemode_radio_human_ai.select()
         gamemode_radio_human_human = tk.Radiobutton(gamemode_frame, text="Human vs Human", variable=self.gamemode_var,
-                                                    value=Gamemode.HUMAN_HUMAN.value)
+                                                    value=GameMode.HUMAN_AI.value)
         gamemode_radio_human_human.grid(row=1, column=0, sticky="w")
         gamemode_radio_ai_ai = tk.Radiobutton(gamemode_frame, text="AI vs AI", variable=self.gamemode_var,
                                               value=GameMode.AI_AI.value)
@@ -337,37 +333,6 @@ class GUI:
                                  self.move_limit_var.get(), self.time_limit_p1_var.get(), self.time_limit_p2_var.get())
         self.settings_window.destroy()
         self.game = self.reset_game()
-        self.ai_vs_ai()
-
-    def ai_vs_ai(self):
-        print("wasup")
-        if self.gamemode_var.get() == Gamemode.AI_AI.value:
-            while not self.is_game_over():
-                self.game.apply_move(self.alpha_beta.alpha_beta_search(self.game.state_rep))  # this is where ai makes move.
-                self.redraw()
-                self.game.apply_move(self.alpha_beta.alpha_beta_search(self.game.state_rep))  # this is where ai makes move.
-                self.redraw()
-
-    def is_game_over(self):
-        if self.game.state_rep.get_nodes_count_for_player(1) == 8:
-            print("Player 2 Wins!")
-            return True
-        if self.game.state_rep.get_nodes_count_for_player(2) == 8:
-            print("Player 1 Wins!")
-            return True
-        return False
-
-    def update_game_status(self):
-        self.is_game_over()
-
-    def player_1_make_move(self, move):
-        self.game.apply_move(move)
-        self.redraw()
-
-    def player_2_make_move(self, move):
-        self.game.apply_move(move)
-        self.redraw()
-
 
     def reset_game(self):
         """
@@ -414,7 +379,6 @@ class GUI:
 
         :return: None
         """
-        # print(self.colour_var.get())  #To get the value of a colour White is 2 Black is 1
         for button in self.selected_buttons:
             button.configure(relief=tk.RAISED)
             button.configure(fg="pink")
@@ -440,13 +404,14 @@ class GUI:
         for node in nodes:
             if node.node_value.value is not self.game.state.player:
                 return None
+
         if selection_size == 1:
             for node in nodes:
                 result_row = node.row + direction.value[0][0]
                 result_column = node.column + direction.value[0][1]
-                adj_node = self.game.state_rep.get_node(result_row, result_column)
-                if adj_node.node_value.value == NodeValue.EMPTY.value:
-                    change_matrix = ChangeMatrix(self.game.state_rep.player,
+                adj_node = self.game.state.get_node(result_row, result_column)
+                if adj_node.node_value == NodeValue.EMPTY:
+                    change_matrix = ChangeMatrix(self.game.state.player,
                                                  [node], [adj_node])
                     return Move(MoveType.Inline, node, node, direction, change_matrix)
         else:
@@ -494,12 +459,8 @@ class GUI:
                 self.history_p1_move.insert(tk.END, repr(move))
             else:
                 self.history_p2_move.insert(tk.END, repr(move))
-
-            self.player_1_make_move(move)
-
-        if self.gamemode_var == Gamemode.HUMAN_AI.value:
-            self.player_2_make_move(self.alpha_beta.alpha_beta_search(self.game.state_rep))
-
+            self.game.apply_move(move)
+            self.redraw()
         else:
             print("Error, invalid move.")
 
@@ -528,10 +489,8 @@ class GUI:
         """
         for row in range(11):
             for column in range(11):
-                node = self.game.state_rep.get_node(row, column)
-                if node.node_value.value is not NodeValue.INVALID.value:
-                    print("row = " + str(row))
-                    print("column = " + str(column))
+                node = self.game.state.get_node(row, column)
+                if node.node_value is not NodeValue.INVALID:
                     self.nodes[row][column].configure(bg=self.PLAYER_COLOR_DICT[node.node_value.value])
 
     def redraw(self):
@@ -543,7 +502,6 @@ class GUI:
         self.update_score()
         self.update_turn_counter()
         self.update_nodes()
-        self.update_game_status()
 
     def run_gui(self):
         """
