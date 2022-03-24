@@ -3,8 +3,8 @@ This module houses the adversarial search algorithm implementation
 for Abalone AI - Minimax and Alpha-Beta pruning.
 """
 import math
-from random import Random
 
+from ai.heuristics import Heuristics
 from state_space_gen.file_processor import FileProcessor
 from state_space_gen.state_space_generator import StateSpaceGenerator
 
@@ -103,14 +103,14 @@ class AlphaBeta:
         :param state: a State object
         :return: a Move object
         """
-        for depth in range(1, 100):
-            print(f"Depth {depth} - current timer {perf_counter() - self.start_time}")
-            if self.out_of_time():
-                break
-            last_search_start = perf_counter()
-            self.best_move_found = self.alpha_beta_search(state, depth)
-            if self.max_time - (perf_counter() - last_search_start) * 10 <= 0:
-                break
+        try:
+            for depth in range(1, 100):
+                print(f"Depth {depth} - current timer {perf_counter() - self.start_time}")
+                if self.out_of_time():
+                    raise OutOfTimeException
+                self.best_move_found = self.alpha_beta_search(state, depth)
+        except OutOfTimeException:
+            pass
         return self.best_move_found
 
     def alpha_beta_search(self, state, max_depth):
@@ -129,6 +129,8 @@ class AlphaBeta:
         next_states_values = {}
 
         for next_state in next_states:
+            if self.out_of_time():
+                raise OutOfTimeException
             next_state_depth = next_state, 1
             value = max(value, self.min_value(next_state_depth, alpha, beta, max_depth))
             alpha = max(alpha, value)
@@ -136,7 +138,7 @@ class AlphaBeta:
 
         max_valued_moves = [moves[next_states.index(s)]
                             for s, v in next_states_values.items() if v == value]
-        chosen_move = max_valued_moves[Random.randint(Random(), 0, len(max_valued_moves) - 1)]
+        chosen_move = generator.sort_moves(max_valued_moves)[0]
 
         # TEST: log results to console
         logging.info(f"Max value: {value}\nMove: {chosen_move}")
@@ -154,12 +156,14 @@ class AlphaBeta:
         :param max_depth: an int
         :return: an int of the highest value obtainable from next states
         """
+        if self.out_of_time():
+            raise OutOfTimeException
         if state_depth[1] == max_depth:
             return self.get_value(state_depth[0])
 
         value = -math.inf
         generator = StateSpaceGenerator(state_depth[0])
-        # moves = generator.generate_all_valid_moves()
+        moves = generator.generate_all_valid_moves()
         next_states = generator.generate_next_states()
 
         for next_state in next_states:
@@ -183,12 +187,14 @@ class AlphaBeta:
         :param max_depth: an int
         :return: an int of the lowest value obtainable from next states
         """
+        if self.out_of_time():
+            raise OutOfTimeException
         if state_depth[1] == max_depth:
             return self.get_value(state_depth[0])
 
         value = math.inf
         generator = StateSpaceGenerator(state_depth[0])
-        # moves = generator.generate_all_valid_moves()
+        moves = generator.generate_all_valid_moves()
         next_states = generator.generate_next_states()
 
         for next_state in next_states:
@@ -210,10 +216,13 @@ class AlphaBeta:
         """
         if state in self.transpos_table.keys():
             return self.transpos_table.get(state)  # not working yet
-        # return heuristic-evaluated value of this state
-        value = Random.randint(Random(), 1, 100)  # PLACEHOLDER: randomize a value
-        self.transpos_table.update({state: value})
+        value = Heuristics.evaluate(state)
+        self.transpos_table.update({state: value})  # not working yet
         return value
+
+
+class OutOfTimeException(Exception):
+    pass
 
 
 if __name__ == "__main__":

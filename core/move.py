@@ -68,6 +68,14 @@ class Move:
         """
         return self._change_matrix
 
+    def is_multi_marble_move(self):
+        """
+        Returns whether this move affects multiple marbles.
+
+        :return: True if move affects 2 or more marbles, otherwise False
+        """
+        return False if self.start_node == self.end_node else True
+
     def is_inline_move(self):
         """
         Checks whether the start and end nodes are inline.
@@ -146,9 +154,9 @@ class MoveType(Enum):
     Enumeration of all move types.
     """
     Inline = 1, 'i'
-    Sidestep = 2, 's'
-    Push = 3, 'p'
-    Scoring = 4, 'w'
+    Sidestep = 1, 's'
+    Push = 2, 'p'
+    Scoring = 3, 'w'
     # These 2 move types are only used in state generation
     Unknown = None, 'u'
     Invalid = 0, 'x'
