@@ -4,7 +4,8 @@ for Abalone AI - Minimax and Alpha-Beta pruning.
 """
 from random import Random
 
-
+import sys,os
+sys.path.append(os.path.realpath('..'))
 from state_space_gen.file_processor import FileProcessor
 from state_space_gen.state_space_generator import StateSpaceGenerator
 from ai.heuristics import HeuristicFunctionMan
