@@ -8,7 +8,7 @@ from state_space_gen.file_processor import FileProcessor
 from state_space_gen.state_space_generator import StateSpaceGenerator
 
 
-class MinimaxAlphaBeta:
+class AlphaBeta:
     """
     Represents an adversarial search algorithm
     using Minimax with Alpha-Beta pruning.
@@ -18,10 +18,13 @@ class MinimaxAlphaBeta:
         """
         Initializes an object of this class.
 
-        :param max_depth: an int of
+        :param max_depth: an int of the max depth to search
         """
         self._max_depth = max_depth
-        self._cache = {}  # transposition table
+        self._transpos_table = {}
+        # performance trackers
+        self.pruned = 0
+        self.table_retrieved = 0
 
     @property
     def max_depth(self):
@@ -42,49 +45,51 @@ class MinimaxAlphaBeta:
         self._max_depth = new_max
 
     @property
-    def cache(self):
+    def transpos_table(self):
         """
-        Returns the transposition table (cache).
+        Returns the transposition table.
 
         :return: a dictionary
         """
-        return self._cache
+        return self._transpos_table
 
-    def minimax_decision(self, state):
+    def alpha_beta_search(self, state):
         """
         Returns the estimated-best-next-move the player can make using
-        minimax algorithm.
+        alpha-beta search algorithm.
 
         :param state: a State object
         :return: a Move object
         """
-        state_depth = state, 0
-        generator = StateSpaceGenerator(state_depth[0])
+        alpha, beta, value = float('-inf'), float('inf'), float('-inf')
+        generator = StateSpaceGenerator(state)
         moves = generator.generate_all_valid_moves()
         next_states = generator.generate_next_states()
         next_states_values_dict = {}
 
         for next_state in next_states:
-            next_state_depth = next_state, state_depth[1] + 1
-            next_states_values_dict.update({next_state: self.min_value(next_state_depth)})
+            next_state_depth = next_state, 1
+            value = max(value, self.min_value(next_state_depth, alpha, beta))
+            alpha = max(alpha, value)
+            next_states_values_dict.update({next_state: value})
 
-        max_value = max(next_states_values_dict.values())
-        max_valued_states = [s for s, v in next_states_values_dict.items() if v == max_value]
-        chosen_state = max_valued_states[Random.randint(Random(), 0, len(max_valued_states) - 1)]
-        chosen_move = moves[next_states.index(chosen_state)]
+        max_valued_moves = [moves[next_states.index(s)]
+                            for s, v in next_states_values_dict.items() if v == value]
+        chosen_move = generator.sort_moves(max_valued_moves)[0]
 
         # TEST: log results to console
-        logging.info(f"Max value: {max_value}\nMove: {chosen_move}"
-                     f"\nMax Result State:{chosen_state}")
+        logging.info(f"Max value: {value}\nMove: {chosen_move}")
 
         return chosen_move
 
-    def max_value(self, state_depth):
+    def max_value(self, state_depth, alpha, beta):
         """
         For the given state, returns the highest value obtainable from the next states,
         from the current player's perspective.
 
         :param state_depth: a tuple with a State and an int for depth
+        :param alpha: an int of the highest value found by max so far
+        :param beta: an int of the lowest value found by min so far
         :return: an int of the highest value obtainable from next states
         """
         if self.is_terminal(state_depth):
@@ -92,20 +97,27 @@ class MinimaxAlphaBeta:
 
         value = float('-inf')
         generator = StateSpaceGenerator(state_depth[0])
-        next_states = generator.generate_state_space()
+        moves = generator.generate_all_valid_moves()
+        next_states = generator.generate_next_states()
 
         for next_state in next_states:
             next_state_depth = next_state, state_depth[1] + 1
-            value = max(value, self.min_value(next_state_depth))
+            value = max(value, self.min_value(next_state_depth, alpha, beta))
+            if value >= beta:
+                self.pruned += 1
+                return value
+            alpha = max(alpha, value)
 
         return value
 
-    def min_value(self, state_depth):
+    def min_value(self, state_depth, alpha, beta):
         """
         For the given state, returns the lowest value obtainable from the next states,
         from the current player's perspective.
 
         :param state_depth: a tuple with a State and an int for depth
+        :param alpha: an int of the highest value found by max so far
+        :param beta: an int of the lowest value found by min so far
         :return: an int of the lowest value obtainable from next states
         """
         if self.is_terminal(state_depth):
@@ -113,11 +125,16 @@ class MinimaxAlphaBeta:
 
         value = float('inf')
         generator = StateSpaceGenerator(state_depth[0])
-        next_states = generator.generate_state_space()
+        moves = generator.generate_all_valid_moves()
+        next_states = generator.generate_next_states()
 
         for next_state in next_states:
             next_state_depth = next_state, state_depth[1] + 1
-            value = min(value, self.max_value(next_state_depth))
+            value = min(value, self.max_value(next_state_depth, alpha, beta))
+            if value <= alpha:
+                self.pruned += 1
+                return value
+            beta = min(beta, value)
 
         return value
 
@@ -137,11 +154,12 @@ class MinimaxAlphaBeta:
         :param state: a State object
         :return: an int of the value of this state
         """
-        if state in self.cache:
-            return self.cache[state]  # avoids recalculating previously seen states
+        if state in self.transpos_table:
+            self.table_retrieved += 1
+            return self.transpos_table.get(state)  # avoids recalculating previously seen states
         # return heuristic-evaluated value of this state
         value = Random.randint(Random(), 1, 100)  # PLACEHOLDER: randomize a value
-        self.cache.update({state: value})
+        self.transpos_table.update({state: value})
         return value
 
 
@@ -152,9 +170,12 @@ if __name__ == "__main__":
 
     # TEST: run algo with test input file
     logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler(stdout)])
-    search_algo = MinimaxAlphaBeta()
+    search_algo = AlphaBeta()
     start = perf_counter()  # TEST: start timer
-    search_algo.minimax_decision(
+
+    search_algo.alpha_beta_search(
         FileProcessor.get_state_from_file("../dist/test_inputs/Test1.input"))
-    end = perf_counter()  # TEST: end timer
-    logging.info(f"Time taken: {end - start}")
+
+    timer = perf_counter() - start
+    logging.info(f"Time taken: {timer}, pruned: {search_algo.pruned},"
+                 f" transpos_table retrieved: {search_algo.table_retrieved}")
