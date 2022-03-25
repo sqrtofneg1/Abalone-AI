@@ -4,6 +4,7 @@ This module houses the GUI class.
 import random
 import tkinter as tk
 
+from ai.heuristics import HeuristicsBach, HeuristicsSunmin, HeuristicsMan
 from core.move import Direction, Move, MoveType, ChangeMatrix
 from core.node import NodeValue, Node
 from state_space_gen.state_space_generator import StateSpaceGenerator
@@ -32,7 +33,7 @@ class GUI:
         self.settings_window = None
         self.layout_var = None
         self.colour_var = None
-        self.gamemode_var = GameMode.HUMAN_AI
+        self.gamemode_var = None
         self.move_limit_var = None
         self.time_limit_p1_var = None
         self.time_limit_p2_var = None
@@ -62,6 +63,9 @@ class GUI:
         self.selected_buttons = set()
 
         self.alpha_beta = AlphaBeta(2)
+        # HEURISTICS
+        self.heuristic1 = HeuristicsBach.evaluate  # for Black
+        self.heuristic2 = HeuristicsSunmin.heuristic  # for White
 
         # Man's Codes
         self.player_1_previous_nodes_undo = None
@@ -71,7 +75,7 @@ class GUI:
         self.player_1_move_counter = -1
         self.player_2_move_counter = -1
 
-        self.button_selected = False
+        self.new_game_settings()
 
     @staticmethod
     def setup_moves_history(frame):
@@ -345,19 +349,18 @@ class GUI:
                                  self.move_limit_var.get(), self.time_limit_p1_var.get(), self.time_limit_p2_var.get())
         self.settings_window.destroy()
         self.game = self.reset_game()
-        self.ai_vs_ai()
         self.random_first_move()
+        self.ai_vs_ai()
 
     def ai_vs_ai(self):
         if self.gamemode_var.get() == GameMode.AI_AI.value:
             while not self.game.is_game_over():
-                self.game.apply_move(self.alpha_beta.start_new_search(self.game.state))
-                self.redraw()
+                self.make_ai_move()
 
     def random_first_move(self):
-        if (self.gamemode_var.get() == GameMode.HUMAN_AI.value) and (
-                self.game.state.player == 1) and (self.game.turn_counter == 1)\
-                and (self.colour_var.get() == 2):
+        if ((self.gamemode_var.get() == GameMode.HUMAN_AI.value) and (
+                self.game.state.player == 1) and (self.game.turn_counter == 1)
+                and (self.colour_var.get() == 2)) or (self.gamemode_var.get() == GameMode.AI_AI.value):
             print("in random first move")
             state_gen = StateSpaceGenerator(self.game.state)
             moves = state_gen.generate_all_valid_moves()
@@ -503,7 +506,8 @@ class GUI:
             print("Error, invalid move.")
 
     def make_ai_move(self):
-        ai_move = self.alpha_beta.start_new_search(self.game.state)
+        heuristic = self.heuristic1 if self.game.state.player == 1 else self.heuristic2
+        ai_move = self.alpha_beta.start_new_search(self.game.state, heuristic)
         if self.game.state.player == 1:
             self.player_1_make_move(ai_move)
         else:
