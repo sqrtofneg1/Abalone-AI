@@ -184,4 +184,4 @@ class Direction(Enum):
 
 
 if __name__ == "__main__":
-    print(f"{MoveType.Inline.value[0]._generate}")
+    print(f"{MoveType.Inline.value[0]}")

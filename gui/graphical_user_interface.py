@@ -63,7 +63,7 @@ class GUI:
 
         self.alpha_beta = AlphaBeta(2)
 
-        #Man's Codes
+        # Man's Codes
         self.player_1_previous_nodes_undo = None
         self.player_2_previous_nodes_undo = None
         self.setup_options_frame(options_frame)  # Moved here by Man, need self.game & undo moves to be made first
@@ -72,7 +72,6 @@ class GUI:
         self.player_2_move_counter = -1
 
         self.button_selected = False
-
 
     @staticmethod
     def setup_moves_history(frame):
@@ -355,6 +354,24 @@ class GUI:
                 self.game.apply_move(self.alpha_beta.start_new_search(self.game.state))
                 self.redraw()
 
+    def ai_vs_human(self):
+        if (self.gamemode_var.get() == GameMode.HUMAN_AI.value) and (
+                self.game.state.player == 1) and self.game.turn_counter == 1:
+            state_gen = StateSpaceGenerator(self.game.state)
+            moves = state_gen.generate_all_valid_moves()
+            move = moves[random.randint(0, len(moves) - 1)]
+            self.history_p1_move.insert(tk.END, repr(move))
+            self.player_1_make_move(move)
+
+    def is_game_over(self):
+        if self.game.state.get_nodes_count_for_player(1) == 8:
+            print("Player 2 Wins!")
+            return True
+        if self.game.state.get_nodes_count_for_player(2) == 8:
+            print("Player 1 Wins!")
+            return True
+        return False
+
     def update_game_status(self):
         self.game.is_game_over()
 
@@ -563,28 +580,6 @@ class GUI:
         :return: None
         """
         self.window.destroy()
-
-    def ai_vs_ai(self):
-        if self.gamemode_var.get() == GameMode.AI_AI.value:
-            while not self.is_game_over():
-                # this is where ai makes move.
-                self.game.apply_move(self.alpha_beta.start_new_search(self.game.state))
-                self.redraw()
-                # this is where ai makes move.
-                self.game.apply_move(self.alpha_beta.start_new_search(self.game.state))
-                self.redraw()
-
-    def is_game_over(self):
-        if self.game.state.get_nodes_count_for_player(1) == 8:
-            print("Player 2 Wins!")
-            return True
-        if self.game.state.get_nodes_count_for_player(2) == 8:
-            print("Player 1 Wins!")
-            return True
-        return False
-
-    def update_game_status(self):
-        self.is_game_over()
 
     def player_1_make_move(self, move):
         self.game.apply_move(move)

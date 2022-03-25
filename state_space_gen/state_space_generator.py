@@ -84,8 +84,7 @@ class StateSpaceGenerator:
 
         :return: a list of Move objects
         """
-        moves.sort(key=lambda move: move.move_type.value[0] + 1 if move.is_multi_marble_move() else 1,
-                   reverse=True)
+        moves.sort(key=lambda move: move.move_type.value[0], reverse=True)
         return moves
 
     def generate_state_space(self):

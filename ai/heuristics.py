@@ -5,21 +5,18 @@ of any given game state from one player's perspective.
 """
 import os
 import sys
+
 sys.path.append(os.path.realpath('..'))
 from core.move import Direction
 
 
 class HeuristicsBach:
-    """
-
-    """
-
-    w_center, w_group, w_score, w_threat = 3, 3, 5, 1
+    w_center, w_group, w_score = 5, 3, 100
 
     @staticmethod
-    def get_player_nodes(state):
+    def get_both_players_nodes(state):
         """
-        Returns a list containing only nodes for both players.
+        Returns a list containing nodes for both players.
 
         :param state: a State object
         :return: a list of Nodes
@@ -75,12 +72,12 @@ class HeuristicsBach:
     def eval_centering(cls, state):
         ally_ratio, enemy_ratio = 1, 1
         total = 0
-        player_nodes = cls.get_player_nodes(state)
-        for node in player_nodes:
+        both_players_nodes = cls.get_both_players_nodes(state)
+        for node in both_players_nodes:
             if node.node_value.value == state.player:
-                total += ally_ratio * (12 / (cls.get_distance_to_center(node) + 2))
+                total += ally_ratio * (12.0 / (cls.get_distance_to_center(node) + 1.0))
             else:
-                total -= enemy_ratio * (12 / (cls.get_distance_to_center(node) + 2))
+                total -= enemy_ratio * (12.0 / (cls.get_distance_to_center(node) + 1.0))
         return total
 
     @classmethod
@@ -88,8 +85,8 @@ class HeuristicsBach:
         ally_ratio, enemy_ratio = 1, 1
         total = 0
         other_player = state.get_other_player_num(state.player)
-        player_nodes = cls.get_player_nodes(state)
-        for node in player_nodes:
+        both_players_nodes = cls.get_both_players_nodes(state)
+        for node in both_players_nodes:
             if node.node_value.value == state.player:
                 total += ally_ratio * len(cls.get_adjacent_allies(state, node, state.player)) * 2
             else:
