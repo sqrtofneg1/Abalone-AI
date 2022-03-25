@@ -355,9 +355,9 @@ class GUI:
                 self.redraw()
 
     def random_first_move(self):
-        if (self.gamemode_var.get() == GameMode.HUMAN_AI.value) and (
-                self.game.state.player == 1) and (self.game.turn_counter == 1)\
+        if ((self.gamemode_var.get() == GameMode.HUMAN_AI.value) or (self.gamemode_var.get() == GameMode.AI_AI.value)) and (self.game.turn_counter == 1)\
                 and (self.colour_var.get() == 2):
+            print("hello")
             print("in random first move")
             state_gen = StateSpaceGenerator(self.game.state)
             moves = state_gen.generate_all_valid_moves()
@@ -497,7 +497,7 @@ class GUI:
                 self.player_1_make_move(move)
             else:
                 self.player_2_make_move(move)
-            if self.gamemode_var.get() == GameMode.HUMAN_AI.value:
+            if self.gamemode_var.value == GameMode.HUMAN_AI.value or self.gamemode_var.value == GameMode.AI_AI.value:
                 self.make_ai_move()
         else:
             print("Error, invalid move.")
@@ -508,7 +508,7 @@ class GUI:
             self.player_1_make_move(ai_move)
         else:
             self.player_2_make_move(ai_move)
-        if self.gamemode_var == GameMode.AI_AI.value:
+        if self.gamemode_var.value == GameMode.AI_AI.value:
             if not self.game.is_game_over():
                 self.make_ai_move()
 

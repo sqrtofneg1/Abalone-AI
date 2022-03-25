@@ -220,10 +220,10 @@ class AlphaBeta:
         # self.transpos_table.update({state: value})  # not working yet
 
         # return heuristic-evaluated value of this state
-        value = HeuristicsBach.evaluate(state)
+        # value = HeuristicsBach.evaluate(state)
 
-        # heufunc = HeuristicsMan(state)
-        # value = heufunc.heuristic_function()
+        heufunc = HeuristicsMan(state)
+        value = heufunc.heuristic_function()
 
         return value
 
