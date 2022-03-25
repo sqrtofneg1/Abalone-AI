@@ -32,7 +32,7 @@ class GUI:
         self.settings_window = None
         self.layout_var = None
         self.colour_var = None
-        self.gamemode_var = GameMode.HUMAN_AI.value
+        self.gamemode_var = GameMode.HUMAN_AI
         self.move_limit_var = None
         self.time_limit_p1_var = None
         self.time_limit_p2_var = None
@@ -346,7 +346,7 @@ class GUI:
         self.settings_window.destroy()
         self.game = self.reset_game()
         self.ai_vs_ai()
-        self.ai_vs_human()
+        self.random_first_move()
 
     def ai_vs_ai(self):
         if self.gamemode_var.get() == GameMode.AI_AI.value:
@@ -354,14 +354,20 @@ class GUI:
                 self.game.apply_move(self.alpha_beta.start_new_search(self.game.state))
                 self.redraw()
 
-    def ai_vs_human(self):
+    def random_first_move(self):
         if (self.gamemode_var.get() == GameMode.HUMAN_AI.value) and (
-                self.game.state.player == 1) and self.game.turn_counter == 1:
+                self.game.state.player == 1) and (self.game.turn_counter == 1)\
+                and (self.colour_var.get() == 2):
+            print("in random first move")
             state_gen = StateSpaceGenerator(self.game.state)
             moves = state_gen.generate_all_valid_moves()
             move = moves[random.randint(0, len(moves) - 1)]
             self.history_p1_move.insert(tk.END, repr(move))
-            self.player_1_make_move(move)
+
+            self.game.apply_move(move)
+            self.player_1_previous_nodes_undo = self.game.last_state.board
+            self.player_1_move_counter = self.player_1_move_counter + 1
+            self.redraw()
 
     def update_game_status(self):
         self.game.is_game_over()
@@ -488,12 +494,10 @@ class GUI:
         self.clear_selection()
         if move:
             if self.game.state.player == 1:
-                self.history_p1_move.insert(tk.END, repr(move))
+                self.player_1_make_move(move)
             else:
-                self.history_p2_move.insert(tk.END, repr(move))
-            self.game.apply_move(move)
-            self.redraw()
-            if self.gamemode_var == GameMode.HUMAN_AI.value:
+                self.player_2_make_move(move)
+            if self.gamemode_var.get() == GameMode.HUMAN_AI.value:
                 self.make_ai_move()
         else:
             print("Error, invalid move.")
@@ -501,11 +505,9 @@ class GUI:
     def make_ai_move(self):
         ai_move = self.alpha_beta.start_new_search(self.game.state)
         if self.game.state.player == 1:
-            self.history_p1_move.insert(tk.END, repr(ai_move))
+            self.player_1_make_move(ai_move)
         else:
-            self.history_p2_move.insert(tk.END, repr(ai_move))
-        self.game.apply_move(ai_move)
-        self.redraw()
+            self.player_2_make_move(ai_move)
         if self.gamemode_var == GameMode.AI_AI.value:
             if not self.game.is_game_over():
                 self.make_ai_move()
@@ -573,12 +575,14 @@ class GUI:
         self.window.destroy()
 
     def player_1_make_move(self, move):
+        self.history_p1_move.insert(tk.END, repr(move))
         self.game.apply_move(move)
         self.player_1_previous_nodes_undo = self.game.last_state.board
         self.player_1_move_counter = self.player_1_move_counter + 1
         self.redraw()
 
     def player_2_make_move(self, move):
+        self.history_p2_move.insert(tk.END, repr(move))
         self.game.apply_move(move)
         self.player_2_previous_nodes_undo = self.game.last_state.board
         self.player_2_move_counter = self.player_2_move_counter + 1
