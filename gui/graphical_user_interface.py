@@ -70,6 +70,8 @@ class GUI:
         self.player_1_move_counter = -1
         self.player_2_move_counter = -1
 
+        self.button_selected = False
+
 
     @staticmethod
     def setup_moves_history(frame):
@@ -375,6 +377,7 @@ class GUI:
         :return: None
         """
         button = self.nodes[row][column]
+        self.button_selected = True
 
         if button not in self.selected_buttons:
             button.configure(relief=tk.SUNKEN)
@@ -464,20 +467,23 @@ class GUI:
         :param direction: a Direction enum object
         :return: None
         """
-        move = self.get_move_from_gui(direction)
-        self.clear_selection()
-        if move:
-            if self.game.state.player == 1:
-                self.history_p1_move.insert(tk.END, repr(move))
+        if self.button_selected:
+            move = self.get_move_from_gui(direction)
+            self.clear_selection()
+            if move:
+                if self.game.state.player == 1:
+                    self.history_p1_move.insert(tk.END, repr(move))
+                else:
+                    self.history_p2_move.insert(tk.END, repr(move))
+
+                self.player_1_make_move(move)
+
+            if self.gamemode_var == GameMode.HUMAN_AI.value:
+                self.player_2_make_move(self.alpha_beta.start_new_search(self.game.state))
             else:
-                self.history_p2_move.insert(tk.END, repr(move))
+                print("Error, invalid move.")
 
-            self.player_1_make_move(move)
-
-        if self.gamemode_var == GameMode.HUMAN_AI.value:
-            self.player_2_make_move(self.alpha_beta.start_new_search(self.game.state))
-        else:
-            print("Error, invalid move.")
+        self.button_selected = False
 
     def update_turn_counter(self):
         """
