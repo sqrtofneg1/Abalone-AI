@@ -2,9 +2,12 @@
 This module houses the adversarial search algorithm implementation
 for Abalone AI - Minimax and Alpha-Beta pruning.
 """
-import math
+import os
+import sys
 
-from ai.heuristics import Heuristics
+sys.path.append(os.path.realpath('..'))
+from time import perf_counter
+from ai.heuristics import HeuristicsBach, HeuristicsMan
 from state_space_gen.file_processor import FileProcessor
 from state_space_gen.state_space_generator import StateSpaceGenerator
 
@@ -15,14 +18,14 @@ class AlphaBeta:
     using Minimax with Alpha-Beta pruning.
     """
 
-    def __init__(self, max_time):
+    def __init__(self, max_time=5):
         """
         Initializes an object of this class.
 
-        :param max_time: an int for seconds
+        :param max_time: an int of the max time to search
         """
         self._max_time = max_time
-        self._transpos_table = {}   # not working yet
+        self._transpos_table = {}
         self._best_move_found = None
         self.start_time = None
         # performance trackers
@@ -31,7 +34,7 @@ class AlphaBeta:
     @property
     def max_time(self):
         """
-        Returns the max time available to search.
+        Returns the max time allowed for this search.
 
         :return: an int
         """
@@ -50,7 +53,6 @@ class AlphaBeta:
     def transpos_table(self):
         """
         Returns the transposition table.
-
         :return: a dictionary
         """
         return self._transpos_table
@@ -119,10 +121,10 @@ class AlphaBeta:
         alpha-beta search algorithm.
 
         :param state: a State object
-        :param max_depth: an int
+        :param max_depth: an int of the max depth to search to
         :return: a Move object
         """
-        alpha, beta, value = -math.inf, math.inf, -math.inf
+        alpha, beta, value = float('-inf'), float('inf'), float('-inf')
         generator = StateSpaceGenerator(state)
         moves = generator.generate_all_valid_moves()
         next_states = generator.generate_next_states()
@@ -141,7 +143,7 @@ class AlphaBeta:
         chosen_move = generator.sort_moves(max_valued_moves)[0]
 
         # TEST: log results to console
-        logging.info(f"Max value: {value}\nMove: {chosen_move}")
+        print(f"Max value: {value}\nMove: {chosen_move}")
 
         return chosen_move
 
@@ -149,11 +151,10 @@ class AlphaBeta:
         """
         For the given state, returns the highest value obtainable from the next states,
         from the current player's perspective.
-
         :param state_depth: a tuple with a State and an int for depth
         :param alpha: an int of the highest value found by max so far
         :param beta: an int of the lowest value found by min so far
-        :param max_depth: an int
+        :param max_depth: an int of the max depth to search to
         :return: an int of the highest value obtainable from next states
         """
         if self.out_of_time():
@@ -161,7 +162,7 @@ class AlphaBeta:
         if state_depth[1] == max_depth:
             return self.get_value(state_depth[0])
 
-        value = -math.inf
+        value = float('-inf')
         generator = StateSpaceGenerator(state_depth[0])
         moves = generator.generate_all_valid_moves()
         next_states = generator.generate_next_states()
@@ -180,11 +181,10 @@ class AlphaBeta:
         """
         For the given state, returns the lowest value obtainable from the next states,
         from the current player's perspective.
-
         :param state_depth: a tuple with a State and an int for depth
         :param alpha: an int of the highest value found by max so far
         :param beta: an int of the lowest value found by min so far
-        :param max_depth: an int
+        :param max_depth: an int of the max depth to search to
         :return: an int of the lowest value obtainable from next states
         """
         if self.out_of_time():
@@ -192,7 +192,7 @@ class AlphaBeta:
         if state_depth[1] == max_depth:
             return self.get_value(state_depth[0])
 
-        value = math.inf
+        value = float('inf')
         generator = StateSpaceGenerator(state_depth[0])
         moves = generator.generate_all_valid_moves()
         next_states = generator.generate_next_states()
@@ -214,10 +214,16 @@ class AlphaBeta:
         :param state: a State object
         :return: an int of the value of this state
         """
-        if state in self.transpos_table.keys():
-            return self.transpos_table.get(state)  # not working yet
-        value = Heuristics.evaluate(state)
-        self.transpos_table.update({state: value})  # not working yet
+        # if state in self.transpos_table:
+        #     return self.transpos_table.get(state)  # not working yet
+        # self.transpos_table.update({state: value})  # not working yet
+
+        # return heuristic-evaluated value of this state
+        value = HeuristicsBach.evaluate(state)
+
+        # heufunc = HeuristicsMan(state)
+        # value = heufunc.heuristic_function()
+
         return value
 
 
@@ -226,17 +232,12 @@ class OutOfTimeException(Exception):
 
 
 if __name__ == "__main__":
-    from time import perf_counter
-    from sys import stdout
-    import logging
-
     # TEST: run algo with test input file
-    logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler(stdout)])
-    alpha_beta = AlphaBeta(5)
+    search_algo = AlphaBeta(15)
     start = perf_counter()  # TEST: start timer
 
-    alpha_beta.start_new_search(
-        FileProcessor.get_state_from_file("../dist/test_inputs/Test1.input"))
+    search_algo.start_new_search(
+        FileProcessor.get_state_from_file("../dist/test_inputs/Test2.input"))
 
     timer = perf_counter() - start
-    logging.info(f"Time taken: {timer}, pruned: {alpha_beta.pruned}")
+    print(f"Time taken: {timer}, pruned: {search_algo.pruned}")
