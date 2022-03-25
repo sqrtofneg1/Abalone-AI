@@ -4,11 +4,10 @@ for Abalone AI - Minimax and Alpha-Beta pruning.
 """
 import os
 import sys
-import random
 
 sys.path.append(os.path.realpath('..'))
 from time import perf_counter
-from ai.heuristics import HeuristicsBach, HeuristicsMan
+from ai.heuristics import HeuristicsBach, HeuristicsMan, HeuristicsSunmin
 from state_space_gen.file_processor import FileProcessor
 from state_space_gen.state_space_generator import StateSpaceGenerator
 
@@ -144,7 +143,7 @@ class AlphaBeta:
         chosen_move = max_valued_moves[0]
 
         # TEST: log results to console
-        print(f"Max value: {value}\nMove: {chosen_move}")
+        # print(f"Max value: {value}\nMove: {chosen_move}")
 
         return chosen_move
 
@@ -220,10 +219,12 @@ class AlphaBeta:
         # self.transpos_table.update({state: value})  # not working yet
 
         # return heuristic-evaluated value of this state
-        value = HeuristicsBach.evaluate(state)
+        # value = HeuristicsBach.evaluate(state)
 
         # heufunc = HeuristicsMan(state)
         # value = heufunc.heuristic_function()
+
+        value = HeuristicsSunmin.heuristic(state)
 
         return value
 
@@ -234,11 +235,25 @@ class OutOfTimeException(Exception):
 
 if __name__ == "__main__":
     # TEST: run algo with test input file
-    search_algo = AlphaBeta(2)
-    start = perf_counter()  # TEST: start timer
+    search_algo = AlphaBeta(5)
 
+    print("\nTest1.input")
+    start = perf_counter()  # TEST: start timer
     search_algo.start_new_search(
         FileProcessor.get_state_from_file("../dist/test_inputs/Test1.input"))
+    timer = perf_counter() - start
+    print(f"Time taken: {timer}, pruned: {search_algo.pruned}")
 
+    print("\nTest2.input")
+    start = perf_counter()  # TEST: start timer
+    search_algo.start_new_search(
+        FileProcessor.get_state_from_file("../dist/test_inputs/Test2.input"))
+    timer = perf_counter() - start
+    print(f"Time taken: {timer}, pruned: {search_algo.pruned}")
+
+    print("\nTest3.input")
+    start = perf_counter()  # TEST: start timer
+    search_algo.start_new_search(
+        FileProcessor.get_state_from_file("../dist/test_inputs/Test3.input"))
     timer = perf_counter() - start
     print(f"Time taken: {timer}, pruned: {search_algo.pruned}")

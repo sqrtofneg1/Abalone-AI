@@ -11,7 +11,7 @@ from core.move import Direction
 
 
 class HeuristicsBach:
-    w_center, w_group, w_score = 5, 3, 100
+    w_center, w_group, w_score = 3, 6, 100
 
     @staticmethod
     def get_both_players_nodes(state):
