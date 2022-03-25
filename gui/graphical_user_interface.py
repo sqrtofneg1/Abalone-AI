@@ -63,7 +63,6 @@ class GUI:
 
         self.alpha_beta = AlphaBeta(2)
 
-
     @staticmethod
     def setup_moves_history(frame):
         """

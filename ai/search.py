@@ -4,6 +4,7 @@ for Abalone AI - Minimax and Alpha-Beta pruning.
 """
 import os
 import sys
+import random
 
 sys.path.append(os.path.realpath('..'))
 from time import perf_counter
@@ -140,7 +141,7 @@ class AlphaBeta:
 
         max_valued_moves = [moves[next_states.index(s)]
                             for s, v in next_states_values.items() if v == value]
-        chosen_move = generator.sort_moves(max_valued_moves)[0]
+        chosen_move = max_valued_moves[0]
 
         # TEST: log results to console
         print(f"Max value: {value}\nMove: {chosen_move}")
@@ -233,11 +234,11 @@ class OutOfTimeException(Exception):
 
 if __name__ == "__main__":
     # TEST: run algo with test input file
-    search_algo = AlphaBeta(15)
+    search_algo = AlphaBeta(2)
     start = perf_counter()  # TEST: start timer
 
     search_algo.start_new_search(
-        FileProcessor.get_state_from_file("../dist/test_inputs/Test2.input"))
+        FileProcessor.get_state_from_file("../dist/test_inputs/Test1.input"))
 
     timer = perf_counter() - start
     print(f"Time taken: {timer}, pruned: {search_algo.pruned}")
