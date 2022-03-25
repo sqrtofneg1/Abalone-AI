@@ -45,7 +45,6 @@ class GUI:
         options_frame.grid(row=0, column=1, sticky="ns")
         self.setup_ai_next_move(options_frame)
         self.setup_directional_arrows(options_frame)
-        self.setup_options_frame(options_frame)
 
         self.game_score = None
         self.turn_counter = None
@@ -62,6 +61,14 @@ class GUI:
         self.selected_buttons = set()
 
         self.alpha_beta = AlphaBeta(2)
+
+        #Man's Codes
+        self.player_1_previous_nodes_undo = None
+        self.player_2_previous_nodes_undo = None
+        self.setup_options_frame(options_frame)  # Moved here by Man, need self.game & undo moves to be made first
+
+        self.player_1_move_counter = -1
+        self.player_2_move_counter = -1
 
 
     @staticmethod
@@ -118,8 +125,8 @@ class GUI:
         return history_p1_move, history_p1_time, history_p2_move, \
                history_p2_time, history_p1_total_time, history_p2_total_time
 
-    @staticmethod
-    def setup_options_frame(frame):
+
+    def setup_options_frame(self, frame):
         """
         Sets up the options section.
 
@@ -137,7 +144,7 @@ class GUI:
         stop_btn.grid(row=4, column=0, pady=pad_y)
         reset_btn = tk.Button(frame, text="Reset", padx=btn_pad_x, pady=btn_pad_y)
         reset_btn.grid(row=5, column=0, pady=pad_y)
-        undo_btn = tk.Button(frame, text="Undo", padx=btn_pad_x, pady=btn_pad_y)
+        undo_btn = tk.Button(frame, text="Undo", padx=btn_pad_x, pady=btn_pad_y, command=self.undo_move)
         undo_btn.grid(row=6, column=0, pady=pad_y)
 
     def setup_top_frame(self):
@@ -339,37 +346,6 @@ class GUI:
         self.game = self.reset_game()
         self.ai_vs_ai()
 
-    def ai_vs_ai(self):
-        print("wasup")
-        if self.gamemode_var.get() == GameMode.AI_AI.value:
-            while not self.is_game_over():
-                # this is where ai makes move.
-                self.game.apply_move(self.alpha_beta.start_new_search(self.game.state))
-                self.redraw()
-                # this is where ai makes move.
-                self.game.apply_move(self.alpha_beta.start_new_search(self.game.state))
-                self.redraw()
-
-    def is_game_over(self):
-        if self.game.state.get_nodes_count_for_player(1) == 8:
-            print("Player 2 Wins!")
-            return True
-        if self.game.state.get_nodes_count_for_player(2) == 8:
-            print("Player 1 Wins!")
-            return True
-        return False
-
-    def update_game_status(self):
-        self.is_game_over()
-
-    def player_1_make_move(self, move):
-        self.game.apply_move(move)
-        self.redraw()
-
-    def player_2_make_move(self, move):
-        self.game.apply_move(move)
-        self.redraw()
-
     def reset_game(self):
         """
         Resets the game to the beginning.
@@ -544,9 +520,9 @@ class GUI:
 
         :return: None
         """
-        self.update_score()
         self.update_turn_counter()
         self.update_nodes()
+        self.update_score()
         self.update_game_status()
 
     def run_gui(self):
@@ -564,3 +540,49 @@ class GUI:
         :return: None
         """
         self.window.destroy()
+
+    def ai_vs_ai(self):
+        if self.gamemode_var.get() == GameMode.AI_AI.value:
+            while not self.is_game_over():
+                # this is where ai makes move.
+                self.game.apply_move(self.alpha_beta.start_new_search(self.game.state))
+                self.redraw()
+                # this is where ai makes move.
+                self.game.apply_move(self.alpha_beta.start_new_search(self.game.state))
+                self.redraw()
+
+    def is_game_over(self):
+        if self.game.state.get_nodes_count_for_player(1) == 8:
+            print("Player 2 Wins!")
+            return True
+        if self.game.state.get_nodes_count_for_player(2) == 8:
+            print("Player 1 Wins!")
+            return True
+        return False
+
+    def update_game_status(self):
+        self.is_game_over()
+
+    def player_1_make_move(self, move):
+        self.game.apply_move(move)
+        self.player_1_previous_nodes_undo = self.game.last_state.board
+        self.player_1_move_counter = self.player_1_move_counter + 1
+        self.redraw()
+
+    def player_2_make_move(self, move):
+        self.game.apply_move(move)
+        self.player_2_previous_nodes_undo = self.game.last_state.board
+        self.player_2_move_counter = self.player_2_move_counter + 1
+        self.redraw()
+
+    def undo_move(self):
+        if self.game.state.player == 1:
+            self.game.state.board = self.player_1_previous_nodes_undo
+            self.history_p1_move.delete(self.player_1_move_counter)
+            self.player_1_move_counter = self.player_1_move_counter - 1
+            self.redraw()
+        else:
+            self.game.state.board = self.player_2_previous_nodes_undo
+            self.history_p2_move.delete(self.player_2_move_counter)
+            self.player_2_move_counter = self.player_2_move_counter - 1
+            self.redraw()
