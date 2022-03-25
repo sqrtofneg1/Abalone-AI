@@ -33,7 +33,7 @@ class GUI:
         self.settings_window = None
         self.layout_var = None
         self.colour_var = None
-        self.gamemode_var = GameMode.HUMAN_AI
+        self.gamemode_var = None
         self.move_limit_var = None
         self.time_limit_p1_var = None
         self.time_limit_p2_var = None
@@ -76,6 +76,7 @@ class GUI:
         self.player_2_move_counter = -1
 
         self.new_game_settings()
+        self.set_and_get_settings()
 
     @staticmethod
     def setup_moves_history(frame):
@@ -349,14 +350,13 @@ class GUI:
                                  self.move_limit_var.get(), self.time_limit_p1_var.get(), self.time_limit_p2_var.get())
         self.settings_window.destroy()
         self.game = self.reset_game()
-        self.ai_vs_ai()
         self.random_first_move()
+        self.ai_vs_ai()
 
     def ai_vs_ai(self):
         if self.gamemode_var.get() == GameMode.AI_AI.value:
             while not self.game.is_game_over():
-                self.game.apply_move(self.alpha_beta.start_new_search(self.game.state))
-                self.redraw()
+                self.make_ai_move()
 
     def random_first_move(self):
         if (self.gamemode_var.get() == GameMode.HUMAN_AI.value) and (
