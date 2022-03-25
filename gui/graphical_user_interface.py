@@ -363,15 +363,6 @@ class GUI:
             self.history_p1_move.insert(tk.END, repr(move))
             self.player_1_make_move(move)
 
-    def is_game_over(self):
-        if self.game.state.get_nodes_count_for_player(1) == 8:
-            print("Player 2 Wins!")
-            return True
-        if self.game.state.get_nodes_count_for_player(2) == 8:
-            print("Player 1 Wins!")
-            return True
-        return False
-
     def update_game_status(self):
         self.game.is_game_over()
 
