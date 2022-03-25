@@ -1,6 +1,7 @@
 """
 This module houses the GUI class.
 """
+import random
 import tkinter as tk
 
 from core.move import Direction, Move, MoveType, ChangeMatrix
@@ -338,6 +339,7 @@ class GUI:
         self.settings_window.destroy()
         self.game = self.reset_game()
         self.ai_vs_ai()
+        self.ai_vs_human()
 
     def ai_vs_ai(self):
         print("wasup")
@@ -349,6 +351,15 @@ class GUI:
                 # this is where ai makes move.
                 self.game.apply_move(self.alpha_beta.start_new_search(self.game.state))
                 self.redraw()
+
+    def ai_vs_human(self):
+        if (self.gamemode_var.get() == GameMode.HUMAN_AI.value) and (self.game.state.player == 1) and self.game.turn_counter == 1:
+            state_gen = StateSpaceGenerator(self.game.state)
+            moves = state_gen.generate_all_valid_moves()
+            move = moves[random.randint(0, len(moves)-1)]
+            self.history_p1_move.insert(tk.END, repr(move))
+            self.player_1_make_move(move)
+
 
     def is_game_over(self):
         if self.game.state.get_nodes_count_for_player(1) == 8:
@@ -362,13 +373,10 @@ class GUI:
     def update_game_status(self):
         self.is_game_over()
 
-    def player_1_make_move(self, move):
+    def make_move(self, move):
         self.game.apply_move(move)
         self.redraw()
 
-    def player_2_make_move(self, move):
-        self.game.apply_move(move)
-        self.redraw()
 
     def reset_game(self):
         """
@@ -496,10 +504,10 @@ class GUI:
             else:
                 self.history_p2_move.insert(tk.END, repr(move))
 
-            self.player_1_make_move(move)
+            self.make_move(move)
 
         if self.gamemode_var == GameMode.HUMAN_AI.value:
-            self.player_2_make_move(self.alpha_beta.start_new_search(self.game.state))
+            self.make_move(self.alpha_beta.start_new_search(self.game.state))
         else:
             print("Error, invalid move.")
 
