@@ -23,7 +23,7 @@ class State:
         """
         self._player = current_player
         self._board = board  # 2d array of Nodes
-        self._scores = [14 - self.get_nodes_count_for_player(1), 14 - self.get_nodes_count_for_player(2)]
+        self._scores = [14 - self.get_nodes_count_for_player(2), 14 - self.get_nodes_count_for_player(1)]
 
     def __repr__(self):
         """
@@ -183,7 +183,7 @@ class State:
         next_player = self.get_other_player_num(self.player)
         new_state = State(next_player, self.copy_current_board())
         if move.move_type == MoveType.Scoring:
-            new_state.scores[self.player - 1] += 1
+            new_state.scores[next_player - 1] += 1
         for row in new_state.board:
             for node in row:
                 if node.node_value.value:  # if not NodeValue.INVALID
