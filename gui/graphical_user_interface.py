@@ -128,7 +128,6 @@ class GUI:
         return history_p1_move, history_p1_time, history_p2_move, \
                history_p2_time, history_p1_total_time, history_p2_total_time
 
-
     def setup_options_frame(self, frame):
         """
         Sets up the options section.
@@ -263,7 +262,7 @@ class GUI:
         clear_selection = tk.Button(arrows_frame, text="Clear \n Selection", command=self.clear_selection)
         clear_selection.grid(row=1, column=2, columnspan=2, sticky="nsew")
 
-    def new_game_settings(self):  # might have to mess with `self.` to get values to be returned.
+    def new_game_settings(self):
         """
         Sets up the settings window.
 
@@ -351,37 +350,13 @@ class GUI:
         self.ai_vs_human()
 
     def ai_vs_ai(self):
-        print("wasup")
         if self.gamemode_var.get() == GameMode.AI_AI.value:
-            while not self.is_game_over():
-                # this is where ai makes move.
+            while not self.game.is_game_over():
                 self.game.apply_move(self.alpha_beta.start_new_search(self.game.state))
                 self.redraw()
-                # this is where ai makes move.
-                self.game.apply_move(self.alpha_beta.start_new_search(self.game.state))
-                self.redraw()
-
-    def ai_vs_human(self):
-        if (self.gamemode_var.get() == GameMode.HUMAN_AI.value) and (self.game.state.player == 1) and self.game.turn_counter == 1:
-            state_gen = StateSpaceGenerator(self.game.state)
-            moves = state_gen.generate_all_valid_moves()
-            move = moves[random.randint(0, len(moves)-1)]
-            self.history_p1_move.insert(tk.END, repr(move))
-            self.player_1_make_move(move)
-
-
-    def is_game_over(self):
-        if self.game.state.get_nodes_count_for_player(1) == 8:
-            print("Player 2 Wins!")
-            return True
-        if self.game.state.get_nodes_count_for_player(2) == 8:
-            print("Player 1 Wins!")
-            return True
-        return False
 
     def update_game_status(self):
-        self.is_game_over()
-
+        self.game.is_game_over()
 
     def reset_game(self):
         """
@@ -412,7 +387,6 @@ class GUI:
         :return: None
         """
         button = self.nodes[row][column]
-        self.button_selected = True
 
         if button not in self.selected_buttons:
             button.configure(relief=tk.SUNKEN)
@@ -502,23 +476,31 @@ class GUI:
         :param direction: a Direction enum object
         :return: None
         """
-        if self.button_selected:
-            move = self.get_move_from_gui(direction)
-            self.clear_selection()
-            if move:
-                if self.game.state.player == 1:
-                    self.history_p1_move.insert(tk.END, repr(move))
-                else:
-                    self.history_p2_move.insert(tk.END, repr(move))
-
-            self.player_1_make_move(move)
-
-        if self.gamemode_var == GameMode.HUMAN_AI.value:
-            self.player_2_make_move(self.alpha_beta.start_new_search(self.game.state))
+        move = self.get_move_from_gui(direction)
+        self.clear_selection()
+        if move:
+            if self.game.state.player == 1:
+                self.history_p1_move.insert(tk.END, repr(move))
+            else:
+                self.history_p2_move.insert(tk.END, repr(move))
+            self.game.apply_move(move)
+            self.redraw()
+            if self.gamemode_var == GameMode.HUMAN_AI.value:
+                self.make_ai_move()
         else:
             print("Error, invalid move.")
 
-        self.button_selected = False
+    def make_ai_move(self):
+        ai_move = self.alpha_beta.start_new_search(self.game.state)
+        if self.game.state.player == 1:
+            self.history_p1_move.insert(tk.END, repr(ai_move))
+        else:
+            self.history_p2_move.insert(tk.END, repr(ai_move))
+        self.game.apply_move(ai_move)
+        self.redraw()
+        if self.gamemode_var == GameMode.AI_AI.value:
+            if not self.game.is_game_over():
+                self.make_ai_move()
 
     def update_turn_counter(self):
         """

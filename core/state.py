@@ -23,7 +23,7 @@ class State:
         """
         self._player = current_player
         self._board = board  # 2d array of Nodes
-        self.scores = [14 - self.get_nodes_count_for_player(1), 14 - self.get_nodes_count_for_player(2)]
+        self._scores = [14 - self.get_nodes_count_for_player(1), 14 - self.get_nodes_count_for_player(2)]
 
     def __repr__(self):
         """
@@ -115,6 +115,10 @@ class State:
         :param new_board: a 2d array of Nodes
         """
         self._board = new_board
+
+    @property
+    def scores(self):
+        return self._scores
 
     def get_node(self, row, column):
         """

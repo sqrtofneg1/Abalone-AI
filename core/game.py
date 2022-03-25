@@ -36,3 +36,12 @@ class Game:
         self.last_state = self.state
         self.state = self.state.apply_move(move)
         self.turn_counter += 1
+
+    def is_game_over(self):
+        if self.state.get_nodes_count_for_player(1) == 8:
+            print("Player 2 Wins!")
+            return True
+        if self.state.get_nodes_count_for_player(2) == 8:
+            print("Player 1 Wins!")
+            return True
+        return False
