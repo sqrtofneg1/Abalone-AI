@@ -173,3 +173,44 @@ class HeuristicsMan:
         value = value + sum(list_of_opponents_nodes__game_board_values)
 
         return value
+
+
+class HeuristicsSunmin:
+
+    @staticmethod
+    def heuristic(state):
+        h = 0
+        self_nodes = state.get_all_nodes_for_player(state.player)
+        opp_nodes = state.get_all_nodes_for_player(state.get_other_player_num(state.player))
+        h += len(self_nodes) * 80
+        h -= len(opp_nodes) * 80
+        for node in self_nodes:
+            h += HeuristicsSunmin.centerness_value(node)
+            h += HeuristicsSunmin.togetherness_value(state, node, state.player)
+        for node in opp_nodes:
+            h -= HeuristicsSunmin.centerness_value(node)
+            h -= HeuristicsSunmin.togetherness_value(state, node, state.get_other_player_num(state.player))
+        return h
+
+    @staticmethod
+    def centerness_value(node):
+        horizontal_centerness = abs(7.5 - ((9 - (9 - node.row)) / 2 + node.column))
+        vertical_centerness = abs(5 - node.row)
+        return (8 - horizontal_centerness) + (8 - vertical_centerness)
+
+    @staticmethod
+    def togetherness_value(state, node, player):
+        value = 0
+        for direction in Direction.left_directions():
+            node_front = state.get_node_in_direction_of_node(node, direction)
+            node_back = state.get_node_in_opposite_direction_of_node(node, direction)
+            if node_front.node_value.value == player & node_back.node_value.value == player:
+                value += 2
+            else:
+                if node_front.node_value.value == player | node_back.node_value.value == player:
+                    value += 0.75
+                if node_front.node_value.value == 0 | node_back.node_value.value == 0:
+                    value -= 2
+        if (value == 6) | (value == 0):
+            value += 2
+        return value
