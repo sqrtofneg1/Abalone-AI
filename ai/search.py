@@ -4,11 +4,13 @@ for Abalone AI - Minimax and Alpha-Beta pruning.
 """
 import os
 import sys
+from random import randint
+
+from core.move import MoveType
 
 sys.path.append(os.path.realpath('..'))
 from time import perf_counter
 
-from ai.heuristics import HeuristicsBach, HeuristicsMan, HeuristicsSunmin
 from state_space_gen.file_processor import FileProcessor
 from state_space_gen.state_space_generator import StateSpaceGenerator
 
@@ -146,7 +148,10 @@ class AlphaBeta:
 
         max_valued_moves = [moves[next_states.index(s)]
                             for s, v in next_states_values.items() if v == value]
-        chosen_move = max_valued_moves[0]
+        if max_valued_moves[0].move_type not in (MoveType.Scoring, MoveType.Push):
+            chosen_move = max_valued_moves[randint(0, len(max_valued_moves) // 2)]
+        else:
+            chosen_move = max_valued_moves[0]
 
         # TEST: log results to console
         # print(f"Max value: {value}\nMove: {chosen_move}")
@@ -237,8 +242,9 @@ class OutOfTimeException(Exception):
 
 
 if __name__ == "__main__":
+    from ai.heuristics import HeuristicsBach, HeuristicsMan, HeuristicsSunmin
     # TEST: run algo with test input file
-    search_algo = AlphaBeta(5)
+    search_algo = AlphaBeta(2)
 
     # heuristic = HeuristicsBach.evaluate
 
