@@ -510,6 +510,7 @@ class GUI:
         :return: None
         """
         self.turn_counter['text'] = f"Turn: {(self.game.turn_counter + 1) // 2}"
+        self.turn_counter.update()
 
     def update_score(self):
         """
@@ -519,6 +520,7 @@ class GUI:
         """
         self.game_score['text'] = \
             f"Player 1: {self.game.state.scores[0]} \t Player 2: {self.game.state.scores[1]}"
+        self.game_score.update()
 
     def update_nodes(self):
         """
@@ -534,6 +536,7 @@ class GUI:
                     # print("row = " + str(row))
                     # print("column = " + str(column))
                     self.nodes[row][column].configure(bg=self.PLAYER_COLOR_DICT[node.node_value.value])
+                    self.nodes[row][column].update()
 
     def redraw(self):
         """
