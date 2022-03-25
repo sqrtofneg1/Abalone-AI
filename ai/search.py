@@ -5,12 +5,10 @@ for Abalone AI - Minimax and Alpha-Beta pruning.
 import os
 import sys
 from random import randint
-
 from core.move import MoveType
 
 sys.path.append(os.path.realpath('..'))
 from time import perf_counter
-
 from state_space_gen.file_processor import FileProcessor
 from state_space_gen.state_space_generator import StateSpaceGenerator
 
@@ -234,6 +232,11 @@ class AlphaBeta:
 
         # return heuristic-evaluated value of this state
         value = heuristic_func(state)
+        # value = HeuristicsBach.evaluate(state)
+
+        heufunc = HeuristicsMan(state)
+        value = heufunc.heuristic_function()
+
         return value
 
 
@@ -243,6 +246,7 @@ class OutOfTimeException(Exception):
 
 if __name__ == "__main__":
     from ai.heuristics import HeuristicsBach, HeuristicsMan, HeuristicsSunmin
+
     # TEST: run algo with test input file
     search_algo = AlphaBeta(2)
 

@@ -76,6 +76,7 @@ class GUI:
         self.player_2_move_counter = -1
 
         self.new_game_settings()
+        self.set_and_get_settings()
 
     @staticmethod
     def setup_moves_history(frame):
@@ -358,9 +359,9 @@ class GUI:
                 self.make_ai_move()
 
     def random_first_move(self):
-        if ((self.gamemode_var.get() == GameMode.HUMAN_AI.value) and (
-                self.game.state.player == 1) and (self.game.turn_counter == 1)
-                and (self.colour_var.get() == 2)) or (self.gamemode_var.get() == GameMode.AI_AI.value):
+        if (self.gamemode_var.get() == GameMode.HUMAN_AI.value) and (
+                self.game.state.player == 1) and (self.game.turn_counter == 1)\
+                and (self.colour_var.get() == 2):
             print("in random first move")
             state_gen = StateSpaceGenerator(self.game.state)
             moves = state_gen.generate_all_valid_moves()
