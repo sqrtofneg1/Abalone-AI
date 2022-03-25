@@ -4,6 +4,7 @@ This module houses the GUI class.
 import random
 import tkinter as tk
 
+from ai.heuristics import HeuristicsBach, HeuristicsSunmin, HeuristicsMan
 from core.move import Direction, Move, MoveType, ChangeMatrix
 from core.node import NodeValue, Node
 from state_space_gen.state_space_generator import StateSpaceGenerator
@@ -62,6 +63,9 @@ class GUI:
         self.selected_buttons = set()
 
         self.alpha_beta = AlphaBeta(2)
+        # HEURISTICS
+        self.heuristic1 = HeuristicsBach.evaluate  # for Black
+        self.heuristic2 = HeuristicsSunmin.heuristic  # for White
 
         # Man's Codes
         self.player_1_previous_nodes_undo = None
@@ -71,7 +75,7 @@ class GUI:
         self.player_1_move_counter = -1
         self.player_2_move_counter = -1
 
-        self.button_selected = False
+        self.new_game_settings()
 
     @staticmethod
     def setup_moves_history(frame):
@@ -355,9 +359,9 @@ class GUI:
                 self.redraw()
 
     def random_first_move(self):
-        if ((self.gamemode_var.get() == GameMode.HUMAN_AI.value) or (self.gamemode_var.get() == GameMode.AI_AI.value)) and (self.game.turn_counter == 1)\
+        if (self.gamemode_var.get() == GameMode.HUMAN_AI.value) and (
+                self.game.state.player == 1) and (self.game.turn_counter == 1)\
                 and (self.colour_var.get() == 2):
-            print("hello")
             print("in random first move")
             state_gen = StateSpaceGenerator(self.game.state)
             moves = state_gen.generate_all_valid_moves()
@@ -497,18 +501,19 @@ class GUI:
                 self.player_1_make_move(move)
             else:
                 self.player_2_make_move(move)
-            if self.gamemode_var.value == GameMode.HUMAN_AI.value or self.gamemode_var.value == GameMode.AI_AI.value:
+            if self.gamemode_var.get() == GameMode.HUMAN_AI.value:
                 self.make_ai_move()
         else:
             print("Error, invalid move.")
 
     def make_ai_move(self):
-        ai_move = self.alpha_beta.start_new_search(self.game.state)
+        heuristic = self.heuristic1 if self.game.state.player == 1 else self.heuristic2
+        ai_move = self.alpha_beta.start_new_search(self.game.state, heuristic)
         if self.game.state.player == 1:
             self.player_1_make_move(ai_move)
         else:
             self.player_2_make_move(ai_move)
-        if self.gamemode_var.value == GameMode.AI_AI.value:
+        if self.gamemode_var == GameMode.AI_AI.value:
             if not self.game.is_game_over():
                 self.make_ai_move()
 

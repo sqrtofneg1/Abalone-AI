@@ -11,7 +11,7 @@ from core.move import Direction
 
 
 class HeuristicsBach:
-    w_center, w_group, w_score = 5, 3, 100
+    w_center, w_group, w_score = 3, 6, 100
 
     @staticmethod
     def get_both_players_nodes(state):
@@ -187,8 +187,8 @@ class HeuristicsMan:
 
 class HeuristicsSunmin:
 
-    @staticmethod
-    def heuristic(state):
+    @classmethod
+    def heuristic(cls, state):
         h = 0
         self_nodes = state.get_all_nodes_for_player(state.player)
         opp_nodes = state.get_all_nodes_for_player(state.get_other_player_num(state.player))
@@ -206,7 +206,8 @@ class HeuristicsSunmin:
     def centerness_value(node):
         horizontal_centerness = abs(7.5 - ((9 - (9 - node.row)) / 2 + node.column))
         vertical_centerness = abs(5 - node.row)
-        return (8 - horizontal_centerness) + (8 - vertical_centerness)
+        return (6 - horizontal_centerness) * (6 - horizontal_centerness) + \
+               (6 - vertical_centerness) * (6 - vertical_centerness)
 
     @staticmethod
     def togetherness_value(state, node, player):
