@@ -54,10 +54,12 @@ class GUI:
         self.turn_counter = None
         self.game_board = None
         self.nodes = None
+        self.history_p1_label = None
         self.history_p1_time = None
         self.history_p1_move = None
         self.history_p1_total_time = None
         self.p1_total_time = datetime.timedelta()
+        self.history_p2_label = None
         self.history_p2_time = None
         self.history_p2_move = None
         self.history_p2_total_time = None
@@ -65,6 +67,7 @@ class GUI:
         self.ai_next_move = None
         self.turn_timer = None
         self.turn_start = datetime.datetime.now().replace(microsecond=0)
+        self.is_p1_turn = True
         self.game = self.reset_game()
         self.selected_buttons = set()
 
@@ -86,8 +89,7 @@ class GUI:
 
         self.last_move_time = datetime.datetime.now()
 
-    @staticmethod
-    def setup_moves_history(frame):
+    def setup_moves_history(self, frame):
         """
         Sets up the move history section.
 
@@ -98,7 +100,7 @@ class GUI:
         history_frame = tk.Frame(frame, relief=tk.RAISED, borderwidth=1, bg="brown")
         history_frame.grid(row=0, column=2, sticky="ns")
 
-        history_p1 = tk.Label(history_frame, text="Player 1", bg="brown", fg="white")
+        history_p1 = tk.Label(history_frame, text="Player 1", bg="red", fg="white")
         history_p1.configure(font=("Segoe UI", 16))
         history_p1.grid(row=0, column=0, columnspan=2)
         history_p2 = tk.Label(history_frame, text="Player 2", bg="brown", fg="white")
@@ -137,8 +139,8 @@ class GUI:
         history_p2_total_time = tk.Label(history_frame, text="Total time: 0:00", pady=pad_y, bg="brown",
                                          fg="white")
         history_p2_total_time.grid(row=3, column=2, columnspan=2, sticky="e")
-        return history_p1_move, history_p1_time, history_p2_move, \
-               history_p2_time, history_p1_total_time, history_p2_total_time
+        return history_p1, history_p1_move, history_p1_time, history_p1_total_time, \
+            history_p2, history_p2_move, history_p2_time, history_p2_total_time
 
     def setup_options_frame(self, frame):
         """
@@ -402,6 +404,7 @@ class GUI:
 
         :return:
         """
+        self.is_p1_turn = True
         # Top frame: Player Score, Turn Counter, Settings button
         self.game_score, self.turn_counter, self.turn_timer = self.setup_top_frame()
 
@@ -409,9 +412,9 @@ class GUI:
         self.game_board = self.setup_game_board_and_nodes(self.center_frame,
                                                           layout_arrays.STARTING_LAYOUT[self.settings.layout])
         # Moves History
-        self.history_p1_move, self.history_p1_time, \
-        self.history_p2_move, self.history_p2_time, \
-        self.history_p1_total_time, self.history_p2_total_time = self.setup_moves_history(self.center_frame)
+        self.history_p1_label, self.history_p1_move, self.history_p1_time, self.history_p1_total_time, \
+            self.history_p2_label, self.history_p2_move, self.history_p2_time,  self.history_p2_total_time \
+            = self.setup_moves_history(self.center_frame)
 
         return Game(self.settings)
 
@@ -573,6 +576,12 @@ class GUI:
                     self.nodes[row][column].update()
 
     def update_history(self):
+        if self.is_p1_turn:
+            self.history_p1_label.config(bg="red")
+            self.history_p2_label.config(bg="brown")
+        else:
+            self.history_p1_label.config(bg="brown")
+            self.history_p2_label.config(bg="red")
         self.history_p1_total_time.update()
         self.history_p1_time.update()
         self.history_p1_move.update()
@@ -618,6 +627,7 @@ class GUI:
         self.game.apply_move(move)
         self.player_1_previous_nodes_undo = self.game.last_state.board
         self.player_1_move_counter = self.player_1_move_counter + 1
+        self.is_p1_turn = not self.is_p1_turn
         self.redraw()
         self.last_move_time = datetime.datetime.now()
         self.turn_start = datetime.datetime.now().replace(microsecond=0)
@@ -631,6 +641,7 @@ class GUI:
         self.game.apply_move(move)
         self.player_2_previous_nodes_undo = self.game.last_state.board
         self.player_2_move_counter = self.player_2_move_counter + 1
+        self.is_p1_turn = not self.is_p1_turn
         self.redraw()
         self.last_move_time = datetime.datetime.now()
         self.turn_start = datetime.datetime.now().replace(microsecond=0)
