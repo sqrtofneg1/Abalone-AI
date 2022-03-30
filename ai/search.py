@@ -234,8 +234,8 @@ class AlphaBeta:
         value = heuristic_func(state)
         # value = HeuristicsBach.evaluate(state)
 
-        heufunc = HeuristicsMan(state)
-        value = heufunc.heuristic_function()
+        # heufunc = HeuristicsMan(state)
+        # value = heufunc.heuristic_function()
 
         return value
 
