@@ -3,6 +3,7 @@ This module houses the GUI class.
 """
 import datetime
 import random
+import time
 import tkinter as tk
 
 from ai.heuristics import HeuristicsBach, HeuristicsSunmin, HeuristicsMan
@@ -62,6 +63,8 @@ class GUI:
         self.history_p2_total_time = None
         self.p2_total_time = datetime.timedelta()
         self.ai_next_move = None
+        self.turn_timer = None
+        self.turn_start = datetime.datetime.now().replace(microsecond=0)
         self.game = self.reset_game()
         self.selected_buttons = set()
 
@@ -177,11 +180,21 @@ class GUI:
         game_score.configure(font=("Consolas", 24))
         game_score.grid(row=0, column=1, sticky="ns")
 
+        turn_timer = tk.Label(top_frame, bg="tan", padx=20)
+        turn_timer.configure(font=("Consolas", 14))
+        turn_timer.grid(row=0, column=2, sticky="nse")
+
         turn_counter = tk.Label(top_frame, text="Turn: 1", bg="tan", padx=20)
         turn_counter.configure(font=("Consolas", 14))
-        turn_counter.grid(row=0, column=2, sticky="nse")
+        turn_counter.grid(row=0, column=3, sticky="nse")
 
-        return game_score, turn_counter
+        return game_score, turn_counter, turn_timer
+
+    def advance_timer(self):
+
+        curr_timer = str(datetime.datetime.now().replace(microsecond=0) - self.turn_start)
+        self.turn_timer.config(text=f"Timer: {curr_timer}")
+        self.turn_timer.after(1000, self.advance_timer)
 
     def setup_game_board_and_nodes(self, frame, starting_setup=None):
         """
@@ -388,7 +401,7 @@ class GUI:
         :return:
         """
         # Top frame: Player Score, Turn Counter, Settings button
-        self.game_score, self.turn_counter = self.setup_top_frame()
+        self.game_score, self.turn_counter, self.turn_timer = self.setup_top_frame()
 
         # Game Board
         self.game_board = self.setup_game_board_and_nodes(self.center_frame,
@@ -583,6 +596,7 @@ class GUI:
 
         :return: None
         """
+        self.advance_timer()
         self.window.mainloop()
 
     def close_gui(self):
@@ -604,6 +618,7 @@ class GUI:
         self.player_1_move_counter = self.player_1_move_counter + 1
         self.redraw()
         self.last_move_time = datetime.datetime.now()
+        self.turn_start = datetime.datetime.now().replace(microsecond=0)
 
     def player_2_make_move(self, move):
         self.history_p2_move.insert(tk.END, repr(move))
@@ -616,6 +631,7 @@ class GUI:
         self.player_2_move_counter = self.player_2_move_counter + 1
         self.redraw()
         self.last_move_time = datetime.datetime.now()
+        self.turn_start = datetime.datetime.now().replace(microsecond=0)
 
     def undo_move(self):
         if self.game.state.player == 1:
