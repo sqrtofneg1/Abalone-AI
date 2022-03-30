@@ -154,7 +154,7 @@ class GUI:
         pad_y = 10
         start_btn = tk.Button(frame, text="Start", padx=btn_pad_x, pady=btn_pad_y)
         start_btn.grid(row=2, column=0, pady=pad_y)
-        pause_btn = tk.Button(frame, text="Pause", padx=btn_pad_x, pady=btn_pad_y)
+        pause_btn = tk.Button(frame, text="Pause", padx=btn_pad_x, pady=btn_pad_y, command=self.pause_game)
         pause_btn.grid(row=3, column=0, pady=pad_y)
         stop_btn = tk.Button(frame, text="Stop", padx=btn_pad_x, pady=btn_pad_y)
         stop_btn.grid(row=4, column=0, pady=pad_y)
@@ -196,9 +196,21 @@ class GUI:
         """
         Updates the turn timer every second.
         """
-        curr_timer = str(datetime.datetime.now().replace(microsecond=0) - self.turn_start)
-        self.turn_timer.config(text=f"Timer: {curr_timer}")
-        self.turn_timer.after(1000, self.advance_timer)
+        if self.turn_timer is not None:
+            curr_timer = str(datetime.datetime.now().replace(microsecond=0) - self.turn_start)
+            self.turn_timer.config(text=f"Timer: {curr_timer}")
+            self.turn_timer.after(1000, self.advance_timer)
+
+    def pause_game(self):
+        """
+        Pauses the game.
+        """
+        # Pause main game timer
+        if self.turn_timer is not None:
+            print("Cancelling")
+            self.turn_timer.after_cancel(self.turn_timer)
+            self.turn_timer = None
+        # Pause player current timer
 
     def setup_game_board_and_nodes(self, frame, starting_setup=None):
         """
