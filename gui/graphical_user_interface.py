@@ -1,6 +1,7 @@
 """
 This module houses the GUI class.
 """
+import datetime
 import random
 import tkinter as tk
 
@@ -55,9 +56,11 @@ class GUI:
         self.history_p1_time = None
         self.history_p1_move = None
         self.history_p1_total_time = None
+        self.p1_total_time = datetime.timedelta()
         self.history_p2_time = None
         self.history_p2_move = None
         self.history_p2_total_time = None
+        self.p2_total_time = datetime.timedelta()
         self.ai_next_move = None
         self.game = self.reset_game()
         self.selected_buttons = set()
@@ -77,6 +80,8 @@ class GUI:
 
         self.new_game_settings()
         self.set_and_get_settings()
+
+        self.last_move_time = datetime.datetime.now()
 
     @staticmethod
     def setup_moves_history(frame):
@@ -125,10 +130,10 @@ class GUI:
 
         history_p1_total_time = tk.Label(history_frame, text="Total time: 0:00", pady=pad_y, bg="brown",
                                          fg="white")
-        history_p1_total_time.grid(row=3, column=1)
+        history_p1_total_time.grid(row=3, column=0, columnspan=2, sticky="e")
         history_p2_total_time = tk.Label(history_frame, text="Total time: 0:00", pady=pad_y, bg="brown",
                                          fg="white")
-        history_p2_total_time.grid(row=3, column=3)
+        history_p2_total_time.grid(row=3, column=2, columnspan=2, sticky="e")
         return history_p1_move, history_p1_time, history_p2_move, \
                history_p2_time, history_p1_total_time, history_p2_total_time
 
@@ -552,6 +557,14 @@ class GUI:
                     self.nodes[row][column].configure(bg=self.PLAYER_COLOR_DICT[node.node_value.value])
                     self.nodes[row][column].update()
 
+    def update_history(self):
+        self.history_p1_total_time.update()
+        self.history_p1_time.update()
+        self.history_p1_move.update()
+        self.history_p2_total_time.update()
+        self.history_p2_time.update()
+        self.history_p2_move.update()
+
     def redraw(self):
         """
         Updates the UI to reflect the state change.
@@ -562,6 +575,7 @@ class GUI:
         self.update_turn_counter()
         self.update_nodes()
         self.update_game_status()
+        self.update_history()
 
     def run_gui(self):
         """
@@ -581,17 +595,27 @@ class GUI:
 
     def player_1_make_move(self, move):
         self.history_p1_move.insert(tk.END, repr(move))
+        this_move_time = datetime.datetime.now() - self.last_move_time
+        self.history_p1_time.insert(tk.END, str(this_move_time)[3:-4])
+        self.p1_total_time += this_move_time
+        self.history_p1_total_time['text'] = f"Total time: {str(self.p1_total_time)[3:-4]}"
         self.game.apply_move(move)
         self.player_1_previous_nodes_undo = self.game.last_state.board
         self.player_1_move_counter = self.player_1_move_counter + 1
         self.redraw()
+        self.last_move_time = datetime.datetime.now()
 
     def player_2_make_move(self, move):
         self.history_p2_move.insert(tk.END, repr(move))
+        this_move_time = datetime.datetime.now() - self.last_move_time
+        self.history_p2_time.insert(tk.END, str(this_move_time)[3:-4])
+        self.p2_total_time += this_move_time
+        self.history_p2_total_time['text'] = f"Total time: {str(self.p2_total_time)[3:-4]}"
         self.game.apply_move(move)
         self.player_2_previous_nodes_undo = self.game.last_state.board
         self.player_2_move_counter = self.player_2_move_counter + 1
         self.redraw()
+        self.last_move_time = datetime.datetime.now()
 
     def undo_move(self):
         if self.game.state.player == 1:
