@@ -191,7 +191,9 @@ class GUI:
         return game_score, turn_counter, turn_timer
 
     def advance_timer(self):
-
+        """
+        Updates the turn timer every second.
+        """
         curr_timer = str(datetime.datetime.now().replace(microsecond=0) - self.turn_start)
         self.turn_timer.config(text=f"Timer: {curr_timer}")
         self.turn_timer.after(1000, self.advance_timer)
@@ -200,7 +202,7 @@ class GUI:
         """
         Sets up the game board section.
 
-        :param frame: the frame to draw in
+        :param frame: the frame to draw in  -
         :param starting_setup: the starting layout of the game
         :return: the game board Frame
         """
