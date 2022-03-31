@@ -209,8 +209,6 @@ class GUI:
         """
         Pauses the game.
         """
-        # Pause main game timer
-        #dont allow pause before first move has been made
         if self.paused_time is None:
             self.paused_time = datetime.datetime.now().replace(microsecond=0)
             self.turn_timer.after_cancel(self.event_handler)
@@ -221,15 +219,9 @@ class GUI:
             self.turn_start = self.turn_start + (self.started_time - self.paused_time)
             self.advance_timer()
             self.paused_time = None
-        # if game isnt running
-        #if self.turn_timer is None
-        #turn on main timer using advance_timer()
-        #turn on current player timers
 
-
-    # def stop_game(self):
-        #Call pause method
-        #disable start btn
+    def stop_game(self):
+        self.pause_game()
 
     def restart_game(self):
         # reset all timers
@@ -442,6 +434,8 @@ class GUI:
         :return:
         """
         self.is_p1_turn = True
+        self.paused_time = None
+        self.turn_start = datetime.datetime.now().replace(microsecond=0)
         # Top frame: Player Score, Turn Counter, Settings button
         self.game_score, self.turn_counter, self.turn_timer = self.setup_top_frame()
 
