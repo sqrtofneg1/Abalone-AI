@@ -6,7 +6,7 @@ import random
 import time
 import tkinter as tk
 
-from ai.heuristics import HeuristicsBach, HeuristicsSunmin, HeuristicsMan
+from ai.heuristics import Heuristics, HeuristicsSunmin, HeuristicsMan
 from core.move import Direction, Move, MoveType, ChangeMatrix
 from core.node import NodeValue, Node
 from state_space_gen.state_space_generator import StateSpaceGenerator
@@ -73,8 +73,8 @@ class GUI:
 
         self.alpha_beta = AlphaBeta(2)
         # HEURISTICS
-        self.heuristic1 = HeuristicsBach.evaluate  # for Black
-        self.heuristic2 = HeuristicsSunmin.heuristic  # for White
+        self.heuristic1 = Heuristics.evaluate  # for Black
+        self.heuristic2 = Heuristics.evaluate  # for White
 
         # Man's Codes
         self.player_1_previous_nodes_undo = None

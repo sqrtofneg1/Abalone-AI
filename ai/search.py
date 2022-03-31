@@ -240,7 +240,7 @@ class OutOfTimeException(Exception):
 
 
 if __name__ == "__main__":
-    from ai.heuristics import HeuristicsBach, HeuristicsMan, HeuristicsSunmin
+    from ai.heuristics import Heuristics, HeuristicsMan, HeuristicsSunmin
 
     # TEST: run algo with test input file
     search_algo = AlphaBeta(2)

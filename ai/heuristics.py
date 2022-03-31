@@ -10,7 +10,7 @@ sys.path.append(os.path.realpath('..'))
 from core.move import Direction
 
 
-class HeuristicsBach:
+class Heuristics:
     w_center, w_group, w_score = 3, 6, 100
 
     @staticmethod
@@ -75,10 +75,17 @@ class HeuristicsBach:
         both_players_nodes = cls.get_both_players_nodes(state)
         for node in both_players_nodes:
             if node.node_value.value == state.player:
-                total += ally_ratio * (12.0 / (cls.get_distance_to_center(node) + 1.0))
+                total += ally_ratio * cls.center_value(node)
             else:
-                total -= enemy_ratio * (12.0 / (cls.get_distance_to_center(node) + 1.0))
+                total -= enemy_ratio * cls.center_value(node)
         return total
+
+    @staticmethod
+    def center_value(node):
+        horizontal_centerness = abs(7.5 - ((9 - (9 - node.row)) / 2 + node.column))
+        vertical_centerness = abs(5 - node.row)
+        return (6 - horizontal_centerness) * (6 - horizontal_centerness) + \
+               (6 - vertical_centerness) * (6 - vertical_centerness)
 
     @classmethod
     def eval_grouping(cls, state):
@@ -100,6 +107,48 @@ class HeuristicsBach:
         enemy_count = 14 - state.scores[1]
         total = ally_ratio * ally_count - enemy_ratio * enemy_count
         return total
+
+
+class HeuristicsSunmin:
+
+    @classmethod
+    def heuristic(cls, state):
+        h = 0
+        self_nodes = state.get_all_nodes_for_player(state.player)
+        opp_nodes = state.get_all_nodes_for_player(state.get_other_player_num(state.player))
+        h += len(self_nodes) * 80
+        h -= len(opp_nodes) * 80
+        for node in self_nodes:
+            h += HeuristicsSunmin.centerness_value(node)
+            h += HeuristicsSunmin.togetherness_value(state, node, state.player)
+        for node in opp_nodes:
+            h -= HeuristicsSunmin.centerness_value(node)
+            h -= HeuristicsSunmin.togetherness_value(state, node, state.get_other_player_num(state.player))
+        return h
+
+    @staticmethod
+    def centerness_value(node):
+        horizontal_centerness = abs(7.5 - ((9 - (9 - node.row)) / 2 + node.column))
+        vertical_centerness = abs(5 - node.row)
+        return (6 - horizontal_centerness) * (6 - horizontal_centerness) + \
+               (6 - vertical_centerness) * (6 - vertical_centerness)
+
+    @staticmethod
+    def togetherness_value(state, node, player):
+        value = 0
+        for direction in Direction.left_directions():
+            node_front = state.get_node_in_direction_of_node(node, direction)
+            node_back = state.get_node_in_opposite_direction_of_node(node, direction)
+            if node_front.node_value.value == player & node_back.node_value.value == player:
+                value += 2
+            else:
+                if node_front.node_value.value == player | node_back.node_value.value == player:
+                    value += 0.75
+                if node_front.node_value.value == 0 | node_back.node_value.value == 0:
+                    value -= 2
+        if (value == 6) | (value == 0):
+            value += 2
+        return value
 
 
 class HeuristicsMan:
@@ -146,8 +195,6 @@ class HeuristicsMan:
         set_of_player_nodes = self._state.get_all_nodes_for_player(player)
         set_of_opponent_nodes = self._state.get_all_nodes_for_player(opponent_player)
 
-
-
         # The bottom 4 lines of codes will search for the player's nodes, extract their coordinates (rows and columns),
         # and then insert them into the GAME_BOARD_VALUE_PLAYER 2D array to find how much their positions are worth and
         # add the sum total of their worth to the value. This will goad the AI to move their marbles to the center
@@ -182,46 +229,4 @@ class HeuristicsMan:
                 self._state.get_nodes_count_for_player(opponent_player):
             value = value + self.PUSH_OPPONENT_MARBLE_OFF_BOARD_VALUE
 
-        return value
-
-
-class HeuristicsSunmin:
-
-    @classmethod
-    def heuristic(cls, state):
-        h = 0
-        self_nodes = state.get_all_nodes_for_player(state.player)
-        opp_nodes = state.get_all_nodes_for_player(state.get_other_player_num(state.player))
-        h += len(self_nodes) * 80
-        h -= len(opp_nodes) * 80
-        for node in self_nodes:
-            h += HeuristicsSunmin.centerness_value(node)
-            h += HeuristicsSunmin.togetherness_value(state, node, state.player)
-        for node in opp_nodes:
-            h -= HeuristicsSunmin.centerness_value(node)
-            h -= HeuristicsSunmin.togetherness_value(state, node, state.get_other_player_num(state.player))
-        return h
-
-    @staticmethod
-    def centerness_value(node):
-        horizontal_centerness = abs(7.5 - ((9 - (9 - node.row)) / 2 + node.column))
-        vertical_centerness = abs(5 - node.row)
-        return (6 - horizontal_centerness) * (6 - horizontal_centerness) + \
-               (6 - vertical_centerness) * (6 - vertical_centerness)
-
-    @staticmethod
-    def togetherness_value(state, node, player):
-        value = 0
-        for direction in Direction.left_directions():
-            node_front = state.get_node_in_direction_of_node(node, direction)
-            node_back = state.get_node_in_opposite_direction_of_node(node, direction)
-            if node_front.node_value.value == player & node_back.node_value.value == player:
-                value += 2
-            else:
-                if node_front.node_value.value == player | node_back.node_value.value == player:
-                    value += 0.75
-                if node_front.node_value.value == 0 | node_back.node_value.value == 0:
-                    value -= 2
-        if (value == 6) | (value == 0):
-            value += 2
         return value
