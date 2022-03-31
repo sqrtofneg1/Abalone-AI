@@ -225,6 +225,7 @@ class GUI:
             if self.paused_time is not None:
                 self.started_time = datetime.datetime.now().replace(microsecond=0)
                 self.turn_start = self.turn_start + (self.started_time - self.paused_time)
+                self.last_move_time = self.last_move_time + (self.started_time - self.paused_time)
                 self.advance_timer()
                 self.paused_time = None
         else:
