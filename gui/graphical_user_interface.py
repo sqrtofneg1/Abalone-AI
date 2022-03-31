@@ -90,6 +90,8 @@ class GUI:
         self.last_move_time = datetime.datetime.now()
 
         self.paused_time = None
+        self.started_time = None
+        self.event_handler = None
 
     def setup_moves_history(self, frame):
         """
@@ -201,7 +203,7 @@ class GUI:
         if self.turn_timer is not None:
             curr_timer = str(datetime.datetime.now().replace(microsecond=0) - self.turn_start)
             self.turn_timer.config(text=f"Timer: {curr_timer}")
-            self.turn_timer.after(1000, self.advance_timer)
+            self.event_handler = self.turn_timer.after(1000, self.advance_timer)
 
     def pause_game(self):
         """
@@ -209,20 +211,16 @@ class GUI:
         """
         # Pause main game timer
         #dont allow pause before first move has been made
-        if self.turn_timer is not None:
+        if self.paused_time is None:
             self.paused_time = datetime.datetime.now().replace(microsecond=0)
-            self.turn_timer.after_cancel(self.turn_timer)
-            self.turn_timer = None
-            print(self.paused_time)
-            #disable movement
+            self.turn_timer.after_cancel(self.event_handler)
 
     def start_game(self):
         if self.paused_time is not None:
-            y, x, self.turn_timer = self.setup_top_frame()
-            self.turn_start = self.paused_time
-            curr_timer = str(datetime.datetime.now().replace(microsecond=0) - self.turn_start)
-            self.turn_timer.config(text=f"Timer: {curr_timer}")
-            self.turn_timer.after(1000, self.advance_timer)
+            self.started_time = datetime.datetime.now().replace(microsecond=0)
+            self.turn_start = self.turn_start + (self.started_time - self.paused_time)
+            self.advance_timer()
+            self.paused_time = None
         # if game isnt running
         #if self.turn_timer is None
         #turn on main timer using advance_timer()
