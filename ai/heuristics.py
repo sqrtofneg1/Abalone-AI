@@ -103,8 +103,10 @@ class Heuristics:
     @classmethod
     def eval_scoring(cls, state):
         ally_ratio, enemy_ratio = 1, 1
-        ally_count = 14 - state.scores[0]
-        enemy_count = 14 - state.scores[1]
+        other_player = state.get_other_player_num(state.player)
+
+        ally_count = 14 - state.get_nodes_count_for_player(other_player)
+        enemy_count = 14 - state.get_nodes_count_for_player(state.player)
         total = ally_ratio * ally_count - enemy_ratio * enemy_count
         return total
 

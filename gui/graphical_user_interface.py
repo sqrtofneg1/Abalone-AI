@@ -555,8 +555,9 @@ class GUI:
 
         :return: None
         """
+        scores = self.game.state.calculate_game_scores()
         self.game_score['text'] = \
-            f"Player 1: {self.game.state.scores[0]} \t Player 2: {self.game.state.scores[1]}"
+            f"Player 1: {scores[0]} \t Player 2: {scores[1]}"
         self.game_score.update()
 
     def update_nodes(self):

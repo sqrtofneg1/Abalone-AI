@@ -23,7 +23,6 @@ class State:
         """
         self._player = current_player
         self._board = board  # 2d array of Nodes
-        self._scores = [14 - self.get_nodes_count_for_player(2), 14 - self.get_nodes_count_for_player(1)]
 
     def __repr__(self):
         """
@@ -37,7 +36,8 @@ class State:
                 node_str = ' '.join((node_str, f"{column.node_value.value} "))
             node_str = ''.join((node_str, "\n"))
         return f"\nPlayer {self.player}'s turn --- " \
-               f"P1 score: {self.scores[0]} --- P2 Score: {self.scores[1]}\n{node_str}"
+               f"P1 score: {14 - self.get_nodes_count_for_player(2)} --- " \
+               f"P2 Score: {14 - self.get_nodes_count_for_player(1)}\n{node_str}"
 
     @staticmethod
     def get_other_player_num(player):
@@ -116,9 +116,9 @@ class State:
         """
         self._board = new_board
 
-    @property
-    def scores(self):
-        return self._scores
+    # @property
+    # def scores(self):
+    #     return self._scores
 
     def get_node(self, row, column):
         """
@@ -182,8 +182,8 @@ class State:
         """
         next_player = self.get_other_player_num(self.player)
         new_state = State(next_player, self.copy_current_board())
-        if move.move_type == MoveType.Scoring:
-            new_state.scores[self.player - 1] += 1
+        # if move.move_type == MoveType.Scoring:
+        #     new_state.scores[self.player - 1] += 1
         for row in new_state.board:
             for node in row:
                 if node.node_value.value:  # if not NodeValue.INVALID
@@ -204,3 +204,6 @@ class State:
                 current_node = self.board[row][col]
                 new_board[row][col] = Node(current_node.node_value, current_node.row, current_node.column)
         return new_board
+
+    def calculate_game_scores(self):
+        return 14 - self.get_nodes_count_for_player(2), 14 - self.get_nodes_count_for_player(1)

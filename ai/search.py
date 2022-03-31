@@ -250,7 +250,7 @@ if __name__ == "__main__":
     # heufunc = HeuristicsMan(state)
     # heuristic = heufunc.heuristic_function
 
-    heuristic = HeuristicsSunmin.heuristic
+    heuristic = Heuristics.evaluate
 
     print("\nTest1.input")
     start = perf_counter()  # TEST: start timer
