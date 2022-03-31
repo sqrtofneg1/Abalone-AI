@@ -217,8 +217,10 @@ class GUI:
         else:
             print("Game is has been stopped, press reset to play again.")
 
-
     def start_game(self):
+        """
+        Starts the game if its is currently paused.
+        """
         if not self.game_stopped:
             if self.paused_time is not None:
                 self.started_time = datetime.datetime.now().replace(microsecond=0)
@@ -229,19 +231,23 @@ class GUI:
             print("Game is has been stopped, press reset to play again.")
 
     def stop_game(self):
+        """
+        Stops the game.
+        """
         self.pause_game()
+        self.clear_selection()
         self.game_stopped = True
 
     def restart_game(self):
-        # reset all timers
-        # recreate board using current setting
-        self.reset_game()
+        """
+        Resets the game to the selected settings.
+        """
+        self.set_and_get_settings()
         self.game_stopped = False
         if self.paused_time is not None:
+            self.paused_time = None
             self.started_time = datetime.datetime.now().replace(microsecond=0)
             self.advance_timer()
-            self.paused_time = None
-
 
     def setup_game_board_and_nodes(self, frame, starting_setup=None):
         """
@@ -565,6 +571,7 @@ class GUI:
         if self.paused_time is None:
             move = self.get_move_from_gui(direction)
             self.clear_selection()
+            print(move)
             if move:
                 if self.game.state.player == 1:
                     self.player_1_make_move(move)
