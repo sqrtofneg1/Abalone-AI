@@ -91,6 +91,7 @@ class GUI:
 
         self.paused_time = None
         self.started_time = None
+        self.game_stopped = False
         self.event_handler = None
 
     def setup_moves_history(self, frame):
@@ -160,7 +161,7 @@ class GUI:
         start_btn.grid(row=2, column=0, pady=pad_y)
         pause_btn = tk.Button(frame, text="Pause", padx=btn_pad_x, pady=btn_pad_y, command=self.pause_game)
         pause_btn.grid(row=3, column=0, pady=pad_y)
-        stop_btn = tk.Button(frame, text="Stop", padx=btn_pad_x, pady=btn_pad_y)
+        stop_btn = tk.Button(frame, text="Stop", padx=btn_pad_x, pady=btn_pad_y, command=self.stop_game)
         stop_btn.grid(row=4, column=0, pady=pad_y)
         reset_btn = tk.Button(frame, text="Reset", padx=btn_pad_x, pady=btn_pad_y, command=self.restart_game)
         reset_btn.grid(row=5, column=0, pady=pad_y)
@@ -209,24 +210,37 @@ class GUI:
         """
         Pauses the game.
         """
-        if self.paused_time is None:
-            self.paused_time = datetime.datetime.now().replace(microsecond=0)
-            self.turn_timer.after_cancel(self.event_handler)
+        if not self.game_stopped:
+            if self.paused_time is None:
+                self.paused_time = datetime.datetime.now().replace(microsecond=0)
+                self.turn_timer.after_cancel(self.event_handler)
+        else:
+            print("Game is has been stopped, press reset to play again.")
+
 
     def start_game(self):
-        if self.paused_time is not None:
-            self.started_time = datetime.datetime.now().replace(microsecond=0)
-            self.turn_start = self.turn_start + (self.started_time - self.paused_time)
-            self.advance_timer()
-            self.paused_time = None
+        if not self.game_stopped:
+            if self.paused_time is not None:
+                self.started_time = datetime.datetime.now().replace(microsecond=0)
+                self.turn_start = self.turn_start + (self.started_time - self.paused_time)
+                self.advance_timer()
+                self.paused_time = None
+        else:
+            print("Game is has been stopped, press reset to play again.")
 
     def stop_game(self):
         self.pause_game()
+        self.game_stopped = True
 
     def restart_game(self):
         # reset all timers
         # recreate board using current setting
         self.reset_game()
+        self.game_stopped = False
+        if self.paused_time is not None:
+            self.started_time = datetime.datetime.now().replace(microsecond=0)
+            self.advance_timer()
+            self.paused_time = None
 
 
     def setup_game_board_and_nodes(self, frame, starting_setup=None):
@@ -434,7 +448,7 @@ class GUI:
         :return:
         """
         self.is_p1_turn = True
-        self.paused_time = None
+
         self.turn_start = datetime.datetime.now().replace(microsecond=0)
         # Top frame: Player Score, Turn Counter, Settings button
         self.game_score, self.turn_counter, self.turn_timer = self.setup_top_frame()
@@ -560,6 +574,8 @@ class GUI:
                     self.make_ai_move()
             else:
                 print("Error, invalid move.")
+        elif self.game_stopped:
+            print("Game is has been stopped, press reset to play again.")
         else:
             print("Game is currently paused, press start to make your next move.")
 
