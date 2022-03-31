@@ -68,6 +68,8 @@ class GUI:
         self.turn_timer = None
         self.turn_start = datetime.datetime.now().replace(microsecond=0)
         self.is_p1_turn = True
+        self.player_1_previous_nodes_undo = None
+        self.player_2_previous_nodes_undo = None
         self.game = self.reset_game()
         self.selected_buttons = set()
 
@@ -77,8 +79,6 @@ class GUI:
         self.heuristic2 = Heuristics.evaluate  # for White
 
         # Man's Codes
-        self.player_1_previous_nodes_undo = None
-        self.player_2_previous_nodes_undo = None
         self.setup_options_frame(options_frame)  # Moved here by Man, need self.game & undo moves to be made first
 
         self.player_1_move_counter = -1
@@ -392,7 +392,7 @@ class GUI:
 
             self.game.apply_move(move)
             self.player_1_previous_nodes_undo = self.game.last_state.board
-            self.player_1_move_counter = self.player_1_move_counter + 1
+            self.player_1_move_counter += 1
             self.redraw()
 
     def update_game_status(self):
@@ -626,7 +626,7 @@ class GUI:
         self.history_p1_total_time['text'] = f"Total time: {str(self.p1_total_time)[3:-4]}"
         self.game.apply_move(move)
         self.player_1_previous_nodes_undo = self.game.last_state.board
-        self.player_1_move_counter = self.player_1_move_counter + 1
+        self.player_1_move_counter += 1
         self.is_p1_turn = not self.is_p1_turn
         self.redraw()
         self.last_move_time = datetime.datetime.now()
@@ -640,20 +640,20 @@ class GUI:
         self.history_p2_total_time['text'] = f"Total time: {str(self.p2_total_time)[3:-4]}"
         self.game.apply_move(move)
         self.player_2_previous_nodes_undo = self.game.last_state.board
-        self.player_2_move_counter = self.player_2_move_counter + 1
+        self.player_2_move_counter += 1
         self.is_p1_turn = not self.is_p1_turn
         self.redraw()
         self.last_move_time = datetime.datetime.now()
         self.turn_start = datetime.datetime.now().replace(microsecond=0)
 
     def undo_move(self):
-        if self.game.state.player == 1:
-            self.game.state.board = self.player_1_previous_nodes_undo
-            self.history_p1_move.delete(self.player_1_move_counter)
-            self.player_1_move_counter = self.player_1_move_counter - 1
-            self.redraw()
-        else:
-            self.game.state.board = self.player_2_previous_nodes_undo
-            self.history_p2_move.delete(self.player_2_move_counter)
-            self.player_2_move_counter = self.player_2_move_counter - 1
-            self.redraw()
+        self.game.state.board = self.player_1_previous_nodes_undo
+        self.history_p1_move.delete(self.player_1_move_counter)
+        self.history_p1_time.delete(self.player_1_move_counter)
+        self.player_1_move_counter -= 1
+
+        # self.game.state.board = self.player_2_previous_nodes_undo
+        self.history_p2_move.delete(self.player_2_move_counter)
+        self.history_p2_time.delete(self.player_2_move_counter)
+        self.player_2_move_counter -= 1
+        self.redraw()
