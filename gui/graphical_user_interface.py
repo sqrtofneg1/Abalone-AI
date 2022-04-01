@@ -89,6 +89,11 @@ class GUI:
 
         self.last_move_time = datetime.datetime.now()
 
+        self.paused_time = None
+        self.started_time = None
+        self.game_stopped = False
+        self.event_handler = None
+
     def setup_moves_history(self, frame):
         """
         Sets up the move history section.
@@ -152,13 +157,13 @@ class GUI:
         btn_pad_x = 25
         btn_pad_y = 5
         pad_y = 10
-        start_btn = tk.Button(frame, text="Start", padx=btn_pad_x, pady=btn_pad_y)
+        start_btn = tk.Button(frame, text="Start", padx=btn_pad_x, pady=btn_pad_y, command=self.start_game)
         start_btn.grid(row=2, column=0, pady=pad_y)
-        pause_btn = tk.Button(frame, text="Pause", padx=btn_pad_x, pady=btn_pad_y)
+        pause_btn = tk.Button(frame, text="Pause", padx=btn_pad_x, pady=btn_pad_y, command=self.pause_game)
         pause_btn.grid(row=3, column=0, pady=pad_y)
-        stop_btn = tk.Button(frame, text="Stop", padx=btn_pad_x, pady=btn_pad_y)
+        stop_btn = tk.Button(frame, text="Stop", padx=btn_pad_x, pady=btn_pad_y, command=self.stop_game)
         stop_btn.grid(row=4, column=0, pady=pad_y)
-        reset_btn = tk.Button(frame, text="Reset", padx=btn_pad_x, pady=btn_pad_y)
+        reset_btn = tk.Button(frame, text="Reset", padx=btn_pad_x, pady=btn_pad_y, command=self.restart_game)
         reset_btn.grid(row=5, column=0, pady=pad_y)
         undo_btn = tk.Button(frame, text="Undo", padx=btn_pad_x, pady=btn_pad_y, command=self.undo_move)
         undo_btn.grid(row=6, column=0, pady=pad_y)
@@ -196,9 +201,54 @@ class GUI:
         """
         Updates the turn timer every second.
         """
-        curr_timer = str(datetime.datetime.now().replace(microsecond=0) - self.turn_start)
-        self.turn_timer.config(text=f"Timer: {curr_timer}")
-        self.turn_timer.after(1000, self.advance_timer)
+        if self.turn_timer is not None:
+            curr_timer = str(datetime.datetime.now().replace(microsecond=0) - self.turn_start)
+            self.turn_timer.config(text=f"Timer: {curr_timer}")
+            self.event_handler = self.turn_timer.after(1000, self.advance_timer)
+
+    def pause_game(self):
+        """
+        Pauses the game.
+        """
+        if not self.game_stopped:
+            if self.paused_time is None:
+                self.paused_time = datetime.datetime.now().replace(microsecond=0)
+                self.turn_timer.after_cancel(self.event_handler)
+        else:
+            print("Game is has been stopped, press reset to play again.")
+
+    def start_game(self):
+        """
+        Starts the game if its is currently paused.
+        """
+        if not self.game_stopped:
+            if self.paused_time is not None:
+                self.started_time = datetime.datetime.now().replace(microsecond=0)
+                self.turn_start = self.turn_start + (self.started_time - self.paused_time)
+                self.last_move_time = self.last_move_time + (self.started_time - self.paused_time)
+                self.advance_timer()
+                self.paused_time = None
+        else:
+            print("Game is has been stopped, press reset to play again.")
+
+    def stop_game(self):
+        """
+        Stops the game.
+        """
+        self.pause_game()
+        self.clear_selection()
+        self.game_stopped = True
+
+    def restart_game(self):
+        """
+        Resets the game to the selected settings.
+        """
+        self.set_and_get_settings()
+        self.game_stopped = False
+        if self.paused_time is not None:
+            self.paused_time = None
+            self.started_time = datetime.datetime.now().replace(microsecond=0)
+            self.advance_timer()
 
     def setup_game_board_and_nodes(self, frame, starting_setup=None):
         """
@@ -377,7 +427,7 @@ class GUI:
 
     def ai_vs_ai(self):
         if self.gamemode_var.get() == GameMode.AI_AI.value:
-            while not self.game.is_game_over():
+            while not self.game.is_game_over() and self.paused_time is None:
                 self.make_ai_move()
 
     def random_first_move(self):
@@ -405,6 +455,8 @@ class GUI:
         :return:
         """
         self.is_p1_turn = True
+
+        self.turn_start = datetime.datetime.now().replace(microsecond=0)
         # Top frame: Player Score, Turn Counter, Settings button
         self.game_score, self.turn_counter, self.turn_timer = self.setup_top_frame()
 
@@ -517,17 +569,23 @@ class GUI:
         :param direction: a Direction enum object
         :return: None
         """
-        move = self.get_move_from_gui(direction)
-        self.clear_selection()
-        if move:
-            if self.game.state.player == 1:
-                self.player_1_make_move(move)
+        if self.paused_time is None:
+            move = self.get_move_from_gui(direction)
+            self.clear_selection()
+            print(move)
+            if move:
+                if self.game.state.player == 1:
+                    self.player_1_make_move(move)
+                else:
+                    self.player_2_make_move(move)
+                if self.gamemode_var.get() == GameMode.HUMAN_AI.value:
+                    self.make_ai_move()
             else:
-                self.player_2_make_move(move)
-            if self.gamemode_var.get() == GameMode.HUMAN_AI.value:
-                self.make_ai_move()
+                print("Error, invalid move.")
+        elif self.game_stopped:
+            print("Game is has been stopped, press reset to play again.")
         else:
-            print("Error, invalid move.")
+            print("Game is currently paused, press start to make your next move.")
 
     def make_ai_move(self):
         heuristic = self.heuristic1 if self.game.state.player == 1 else self.heuristic2
@@ -539,6 +597,7 @@ class GUI:
         if self.gamemode_var == GameMode.AI_AI.value:
             if not self.game.is_game_over():
                 self.make_ai_move()
+
 
     def update_turn_counter(self):
         """
