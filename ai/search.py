@@ -146,10 +146,10 @@ class AlphaBeta:
 
         max_valued_moves = [moves[next_states.index(s)]
                             for s, v in next_states_values.items() if v == value]
-        if max_valued_moves[0].move_type not in (MoveType.Scoring, MoveType.Push):
-            chosen_move = max_valued_moves[randint(0, len(max_valued_moves) // 2)]
-        else:
-            chosen_move = max_valued_moves[0]
+        # if max_valued_moves[0].move_type not in (MoveType.Scoring, MoveType.Push):
+        #     chosen_move = max_valued_moves[randint(0, 1)]
+        # else:
+        chosen_move = max_valued_moves[0]
 
         # TEST: log results to console
         # print(f"Max value: {value}\nMove: {chosen_move}")
