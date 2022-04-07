@@ -693,7 +693,7 @@ class GUI:
         self.redraw()
         self.last_move_time = datetime.datetime.now()
         self.turn_start = datetime.datetime.now().replace(microsecond=0)
-        if (self.game.turn_counter + 1) // 2 >= self.settings.move_limit:
+        if (self.settings.move_limit != 0) and ((self.game.turn_counter + 1) // 2 >= self.settings.move_limit):
             self.popup_message("Move limit reached!")
 
     def player_2_make_move(self, move):
@@ -711,7 +711,7 @@ class GUI:
         self.redraw()
         self.last_move_time = datetime.datetime.now()
         self.turn_start = datetime.datetime.now().replace(microsecond=0)
-        if (self.game.turn_counter + 1) // 2 >= self.settings.move_limit:
+        if (self.settings.move_limit != 0) and ((self.game.turn_counter + 1) // 2 >= self.settings.move_limit):
             self.popup_message("Move limit reached!")
 
     def undo_move(self):
