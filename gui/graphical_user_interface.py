@@ -5,6 +5,7 @@ import datetime
 import random
 import time
 import tkinter as tk
+from tkinter import messagebox
 
 from ai.heuristics import Heuristics, HeuristicsSunmin, HeuristicsMan
 from core.move import Direction, Move, MoveType, ChangeMatrix
@@ -681,6 +682,8 @@ class GUI:
     def player_1_make_move(self, move):
         self.history_p1_move.insert(tk.END, repr(move))
         this_move_time = datetime.datetime.now() - self.last_move_time
+        if (self.settings.time_limit_p1 != 0) and (this_move_time.total_seconds() > self.settings.time_limit_p1):
+            self.popup_message("Player 1 has gone over move time limit!")
         self.history_p1_time.insert(tk.END, str(this_move_time)[3:-4])
         self.p1_total_time += this_move_time
         self.history_p1_total_time['text'] = f"Total time: {str(self.p1_total_time)[3:-4]}"
@@ -691,10 +694,14 @@ class GUI:
         self.redraw()
         self.last_move_time = datetime.datetime.now()
         self.turn_start = datetime.datetime.now().replace(microsecond=0)
+        if (self.game.turn_counter + 1) // 2 >= self.settings.move_limit:
+            self.popup_message("Move limit reached!")
 
     def player_2_make_move(self, move):
         self.history_p2_move.insert(tk.END, repr(move))
         this_move_time = datetime.datetime.now() - self.last_move_time
+        if (self.settings.time_limit_p2 != 0) and (this_move_time.total_seconds() > self.settings.time_limit_p2):
+            self.popup_message("Player 2 has gone over move time limit!")
         self.history_p2_time.insert(tk.END, str(this_move_time)[3:-4])
         self.p2_total_time += this_move_time
         self.history_p2_total_time['text'] = f"Total time: {str(self.p2_total_time)[3:-4]}"
@@ -705,6 +712,8 @@ class GUI:
         self.redraw()
         self.last_move_time = datetime.datetime.now()
         self.turn_start = datetime.datetime.now().replace(microsecond=0)
+        if (self.game.turn_counter + 1) // 2 >= self.settings.move_limit:
+            self.popup_message("Move limit reached!")
 
     def undo_move(self):
         self.game.state.board = self.player_1_previous_nodes_undo
@@ -717,3 +726,6 @@ class GUI:
         self.history_p2_time.delete(self.player_2_move_counter)
         self.player_2_move_counter -= 1
         self.redraw()
+
+    def popup_message(self, message):
+        messagebox.showinfo("Info", message, parent=self.window)
