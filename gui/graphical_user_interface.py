@@ -573,7 +573,6 @@ class GUI:
         if self.paused_time is None:
             move = self.get_move_from_gui(direction)
             self.clear_selection()
-            print(move)
             if move:
                 if self.game.state.player == 1:
                     self.player_1_make_move(move)
@@ -584,9 +583,9 @@ class GUI:
             else:
                 print("Error, invalid move.")
         elif self.game_stopped:
-            print("Game is has been stopped, press reset to play again.")
+            self.popup_message("Game is has been stopped, press reset to play again.")
         else:
-            print("Game is currently paused, press start to make your next move.")
+            self.popup_message("Game is currently paused, press start to make your next move.")
 
     def make_ai_move(self):
         heuristic = self.heuristic1 if self.game.state.player == 1 else self.heuristic2
