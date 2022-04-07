@@ -440,7 +440,7 @@ class GUI:
             moves = state_gen.generate_all_valid_moves()
             move = moves[random.randint(0, len(moves) - 1)]
             self.history_p1_move.insert(tk.END, repr(move))
-            self.history_p1_time.insert("0:00.00")
+            self.history_p1_time.insert(tk.END, "0:00.00")
 
             self.game.apply_move(move)
             self.player_1_previous_nodes_undo = self.game.last_state.board
