@@ -66,6 +66,7 @@ class Heuristics:
         centering = cls.w_center * cls.eval_centering(state)
         grouping = cls.w_group * cls.eval_grouping(state)
         scoring = cls.w_score * cls.eval_scoring(state)
+        # print(f"STATE: {state} Total: {centering + grouping + scoring} \n\n\n")
         return centering + grouping + scoring
 
     @classmethod
@@ -78,6 +79,7 @@ class Heuristics:
                 total += ally_ratio * cls.center_value(node)
             else:
                 total -= enemy_ratio * cls.center_value(node)
+        # print(f"Center: {total}")
         return total
 
     @staticmethod
@@ -98,6 +100,7 @@ class Heuristics:
                 total += ally_ratio * len(cls.get_adjacent_allies(state, node, state.player)) * 2
             else:
                 total -= enemy_ratio * len(cls.get_adjacent_allies(state, node, other_player)) * 2
+        # print(f"Grouping: {total}")
         return total
 
     @classmethod
@@ -108,6 +111,7 @@ class Heuristics:
         ally_count = 14 - state.get_nodes_count_for_player(other_player)
         enemy_count = 14 - state.get_nodes_count_for_player(state.player)
         total = ally_ratio * ally_count - enemy_ratio * enemy_count
+        # print(f"Scoring: {total}")
         return total
 
 
