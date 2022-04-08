@@ -4,8 +4,6 @@ for Abalone AI - Minimax and Alpha-Beta pruning.
 """
 import os
 import sys
-from random import randint
-from core.move import MoveType
 
 sys.path.append(os.path.realpath('..'))
 from time import perf_counter
@@ -26,7 +24,6 @@ class AlphaBeta:
         :param max_time: an int of the max time to search
         """
         self._max_time = max_time
-        self._transpos_table = {}
         self._best_move_found = None
         self.start_time = None
         # performance trackers
@@ -49,14 +46,6 @@ class AlphaBeta:
         :param new_max: an int
         """
         self._max_time = new_max
-
-    @property
-    def transpos_table(self):
-        """
-        Returns the transposition table.
-        :return: a dictionary
-        """
-        return self._transpos_table
 
     @property
     def best_move_found(self):
@@ -94,7 +83,6 @@ class AlphaBeta:
         """
         func_name = str(heuristic_func).split(" ", 3)[-2]
         print(f"Starting search with {func_name}")
-        self._transpos_table.clear()
         self.pruned = 0
         # self.transpos_table_hits = 0
         self.best_move_found = None
@@ -146,9 +134,6 @@ class AlphaBeta:
 
         max_valued_moves = [moves[next_states.index(s)]
                             for s, v in next_states_values.items() if v == value]
-        # if max_valued_moves[0].move_type not in (MoveType.Scoring, MoveType.Push):
-        #     chosen_move = max_valued_moves[randint(0, 1)]
-        # else:
         chosen_move = max_valued_moves[0]
 
         # TEST: log results to console
@@ -174,8 +159,7 @@ class AlphaBeta:
 
         value = float('-inf')
         generator = StateSpaceGenerator(state_depth[0])
-        moves = generator.generate_all_valid_moves()
-        next_states = generator.generate_next_states()
+        next_states = generator.generate_state_space()
 
         for next_state in next_states:
             next_state_depth = next_state, state_depth[1] + 1
@@ -205,8 +189,7 @@ class AlphaBeta:
 
         value = float('inf')
         generator = StateSpaceGenerator(state_depth[0])
-        moves = generator.generate_all_valid_moves()
-        next_states = generator.generate_next_states()
+        next_states = generator.generate_state_space()
 
         for next_state in next_states:
             next_state_depth = next_state, state_depth[1] + 1
@@ -218,7 +201,8 @@ class AlphaBeta:
 
         return value
 
-    def get_value(self, state, heuristic_func):
+    @staticmethod
+    def get_value(state, heuristic_func):
         """
         Returns the estimated value of this state according to heuristic functions.
 
@@ -226,10 +210,6 @@ class AlphaBeta:
         :param heuristic_func: the function of the heuristic
         :return: an int of the value of this state
         """
-        # if state in self.transpos_table:
-        #     return self.transpos_table.get(state)  # not working yet
-        # self.transpos_table.update({state: value})  # not working yet
-
         # return heuristic-evaluated value of this state
         value = heuristic_func(state)
         return value
@@ -240,15 +220,10 @@ class OutOfTimeException(Exception):
 
 
 if __name__ == "__main__":
-    from ai.heuristics import Heuristics, HeuristicsMan, HeuristicsSunmin
+    from ai.heuristics import Heuristics
 
     # TEST: run algo with test input file
     search_algo = AlphaBeta(2)
-
-    # heuristic = HeuristicsBach.evaluate
-
-    # heufunc = HeuristicsMan(state)
-    # heuristic = heufunc.heuristic_function
 
     heuristic = Heuristics.evaluate
 
