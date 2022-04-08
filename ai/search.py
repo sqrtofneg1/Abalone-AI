@@ -84,7 +84,6 @@ class AlphaBeta:
         func_name = str(heuristic_func).split(" ", 3)[-2]
         print(f"Starting search with {func_name}")
         self.pruned = 0
-        # self.transpos_table_hits = 0
         self.best_move_found = None
         self.start_time = perf_counter()
         return self.iter_deep_search(state, heuristic_func)
